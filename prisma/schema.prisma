@@ -1,0 +1,66 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String?  @unique
+  content   String
+  image     String?
+  tag       String?
+  editor    String?   
+  createdAt DateTime @default(now())
+
+  comments Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String?  @unique
+  comment   String
+  status    String?
+  createdAt DateTime @default(now())
+  newsId    Int
+  News      News     @relation(fields: [newsId], references: [id])
+}
+
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String?  @unique
+  subtitle  String
+  desc      String
+  image     String?
+}
+
+model Tenant {
+  id             Int        @id @default(autoincrement())
+  nameTenant     String
+  slug           String?    @unique
+  desc           String
+  imageLogo      String?
+  address        String
+  phone          String
+  email          String
+  linkMaps       String?
+  linkFacebook   String?
+  linkInstagram  String?
+  linkTwitter    String?
+  linkLinkedin   String?
+  copyRight      String?
+}
