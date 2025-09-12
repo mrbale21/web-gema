@@ -7,9 +7,10 @@ import {
   updateBanner,
 } from "@/lib/services/bannerServices";
 
+// GET
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> } // params harus Promise
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
@@ -27,6 +28,7 @@ export async function GET(
   }
 }
 
+// PUT
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -43,7 +45,7 @@ export async function PUT(
     const desc = formData.get("desc") as string;
     const imageFile = formData.get("image") as File | null;
 
-    let imageUrl: string | undefined = undefined;
+    let imageUrl: string | undefined;
     if (imageFile) {
       const bytes = await imageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
@@ -65,6 +67,7 @@ export async function PUT(
   }
 }
 
+// DELETE
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }

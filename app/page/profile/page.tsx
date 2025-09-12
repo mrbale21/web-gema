@@ -2,10 +2,35 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Users, Target, BookOpen, Lightbulb } from "lucide-react";
+import { BookOpen, Lightbulb, Target, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
 
+interface timelineData {
+  title: string;
+  year: string;
+  desc: string;
+}
+
 export default function ProfilePage() {
+  const [timeline, setTimeline] = useState<timelineData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/timeline")
+      .then((res) => res.json())
+      .then((json) => {
+        if (Array.isArray(json)) {
+          setTimeline(json);
+        }
+      })
+      .catch((err) => console.error("Invalid API", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p>loading.....</p>;
+  if (!timeline) return <p>data tidak valid</p>;
+
   const values = [
     {
       icon: <Users className="w-8 h-8 text-primary" />,
@@ -46,28 +71,7 @@ export default function ProfilePage() {
           <div className="absolute left-4 md:left-1/2 transform md:-translate-x-1/2 h-full w-1 bg-primary/20"></div>
 
           <div className="space-y-12">
-            {[
-              {
-                year: "2010",
-                title: "Awal Terbentuk",
-                desc: "Dimulai sebagai komunitas kecil pemuda Nahdliyin dengan fokus pendidikan dan diskusi.",
-              },
-              {
-                year: "2015",
-                title: "Penguatan Organisasi",
-                desc: "Berkembang menjadi organisasi resmi dengan berbagai program sosial dan ekonomi.",
-              },
-              {
-                year: "2020",
-                title: "Digitalisasi Gerakan",
-                desc: "Mulai mendorong literasi digital dan keterlibatan aktif di dunia teknologi.",
-              },
-              {
-                year: "2023",
-                title: "Gerakan Kolaboratif",
-                desc: "Aktif di bidang UMKM, pelatihan, dan pemberdayaan generasi muda secara nasional.",
-              },
-            ].map((item, idx) => (
+            {timeline.map((item, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 40 }}

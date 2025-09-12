@@ -29,10 +29,13 @@ export default function AuthPage() {
         return;
       }
 
+      // simpan token + user
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      router.push("/dashboard");
-      alert("succes");
+      router.push("/admin/dashboard");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -54,7 +57,7 @@ export default function AuthPage() {
               placeholder="Nama Lengkap"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-900"
+              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-800"
               required
             />
           )}
@@ -63,7 +66,7 @@ export default function AuthPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-900"
+            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-800"
             required
           />
           <input
@@ -71,7 +74,7 @@ export default function AuthPage() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-900"
+            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-gray-800"
             required
           />
 

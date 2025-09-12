@@ -33,10 +33,17 @@ export default function NewsCard({
       />
       <div className="p-5 flex flex-col flex-grow">
         <span className="text-secondary text-sm font-semibold">
-          {createdAt}
+          {new Date(createdAt).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
         </span>
         <h3 className="text-lg font-bold mt-2 mb-3">{title}</h3>
-        <p className="text-gray-600 flex-grow">{content}</p>
+        <div
+          className="text-gray-600 flex-grow line-clamp-3"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
         <button
           onClick={() => router.push(`/news/${id}`)}
           className="mt-4 inline-flex items-center text-primary font-semibold hover:underline"

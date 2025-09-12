@@ -57,15 +57,6 @@ export default function NewsSection({ limit }: { limit?: number }) {
   // Data ditampilkan: limit kalau ada, kalau tidak pakai paginatedData
   const displayedNews = limit ? news.slice(0, limit) : paginatedData;
 
-  function formatDate(dateString: string) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-  }
-
   return (
     <section className="py-16 bg-white pt-30">
       <div className=" mx-auto px-4 md:px-8">
@@ -80,7 +71,7 @@ export default function NewsSection({ limit }: { limit?: number }) {
         {/* Tombol Selengkapnya (hanya muncul kalau ada limit) */}
         {limit && (
           <div
-            onClick={() => router.push("/news")}
+            onClick={() => router.push("/page/news")}
             className="w-full flex md:justify-end justify-center pb-10 cursor-pointer"
           >
             <ButtonReadMore title="Selengkapnya" />
@@ -101,12 +92,19 @@ export default function NewsSection({ limit }: { limit?: number }) {
               />
               <div className="p-5 flex flex-col flex-grow">
                 <span className="text-secondary text-sm font-semibold">
-                  {item.createdAt}
+                  {new Date(item.createdAt).toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </span>
                 <h3 className="text-lg font-bold mt-2 mb-3">{item.title}</h3>
-                <p className="text-gray-600 flex-grow">{item.content}</p>
+                <div
+                  className="text-gray-600 flex-grow"
+                  dangerouslySetInnerHTML={{ __html: item.content }}
+                />
                 <button
-                  onClick={() => router.push(`/news/${item.id}`)}
+                  onClick={() => router.push(`/page/news/${item.id}`)}
                   className="mt-4 inline-flex items-center text-primary font-semibold hover:underline"
                 >
                   Baca Selengkapnya <ArrowRight size={18} className="ml-1" />

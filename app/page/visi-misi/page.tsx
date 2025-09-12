@@ -1,13 +1,55 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { FaBullseye, FaLightbulb, FaQuoteLeft } from "react-icons/fa";
 import LayoutPage from "../layout-page";
 
+interface VisiMisi {
+  id: number;
+  title: string;
+  subtitle: string;
+  vs: string;
+  ms: string;
+  moto: string;
+  titleMoto: string;
+  visi: Visi[];
+  misi: Misi[];
+}
+
+interface Visi {
+  id: number;
+  title: string;
+}
+
+interface Misi {
+  id: number;
+  title: string;
+}
+
 export default function VisiMisi() {
+  const [data, setData] = useState<VisiMisi | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/visi-misi")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.length > 0) {
+          setData(json[0]); // ambil 1 data pertama
+        }
+      })
+      .catch((err) => console.error("masalah pada api", err))
+      .finally(() => setLoading(false));
+  }, []);
+  if (loading) return <p>loading.....</p>;
+  if (!data) return <p>data tidak valid</p>;
+
   return (
     <>
       <LayoutPage
-        title="Visi Misi"
-        titlePage="Visi Misi"
-        desc="Menjadi wadah perjuangan dan pemberdayaan warga Nahdliyin dengan semangat kebersamaan, pertumbuhan usaha, serta keberkahan yang berlandaskan nilai syariah."
+        title={data.title}
+        titlePage={data.title}
+        desc={data.subtitle}
       >
         <section className="bg-white py-8 px-4 md:px-12 lg:px-24">
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
@@ -16,14 +58,11 @@ export default function VisiMisi() {
               <div className="flex items-center gap-4 mb-4">
                 <FaLightbulb className="text-primary text-4xl" />
                 <h3 className="text-2xl font-bold text-primary lg:text-3xl">
-                  Visi
+                  {data.vs}
                 </h3>
               </div>
               <p className="text-gray-700 leading-relaxed lg:text-lg">
-                Menjadi wadah gerakan ekonomi umat yang berlandaskan nilai-nilai
-                Nahdlatul Ulama, mandiri, berdaya saing, dan berkontribusi nyata
-                dalam meningkatkan kesejahteraan masyarakat serta kemandirian
-                bangsa.
+                {data.visi.map((v) => v.title)}
               </p>
             </div>
 
@@ -32,30 +71,14 @@ export default function VisiMisi() {
               <div className="flex items-center gap-4 mb-4">
                 <FaBullseye className="text-primary text-4xl" />
                 <h3 className="text-2xl font-bold text-primary lg:text-3xl">
-                  Misi
+                  {data.ms}
                 </h3>
               </div>
+
               <ul className="list-disc list-outside pl-5 space-y-2 text-gray-700 leading-relaxed">
-                <li>
-                  Memberdayakan UMKM dan pelaku usaha melalui pendampingan,
-                  pelatihan, dan akses pasar.
-                </li>
-                <li>
-                  Membangun ekosistem ekonomi yang adil, inklusif, dan
-                  berkelanjutan bagi masyarakat.
-                </li>
-                <li>
-                  Menanamkan nilai kemandirian, kebersamaan, dan semangat gotong
-                  royong dalam setiap kegiatan usaha.
-                </li>
-                <li>
-                  Memanfaatkan teknologi digital untuk memperluas jaringan dan
-                  meningkatkan daya saing produk lokal.
-                </li>
-                <li>
-                  Menjalin kemitraan strategis dengan berbagai pihak untuk
-                  memperkuat jejaring usaha Nahdliyin.
-                </li>
+                {data.misi.map((m) => (
+                  <li key={m.id}>{m.title}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -69,7 +92,7 @@ export default function VisiMisi() {
               Motto Gema Nahdliyin
             </h3>
             <p className="text-lg italic text-gray-700">
-              "Bersinergi, Berdaya, dan Berkah untuk Umat"
+              Bersinergi, Berdaya, dan Berkah untuk Umat
             </p>
           </div>
         </section>

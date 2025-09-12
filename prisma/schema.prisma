@@ -15,6 +15,25 @@ model User {
   createdAt DateTime @default(now())
 }
 
+model Menu {
+  id        Int       @id @default(autoincrement())
+  title     String
+  href      String?
+  submenus  Submenu[] 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Submenu {
+  id        Int      @id @default(autoincrement())
+  title     String
+  href      String?
+  menuId    Int
+  menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model News {
   id        Int      @id @default(autoincrement())
   title     String
@@ -49,18 +68,108 @@ model Banner {
 }
 
 model Tenant {
+  id           Int     @id @default(autoincrement())
+  nameTenant   String
+  address      String
+  desc         String
+  phone        String
+  email        String
+  linkMaps     String?
+  linkFacebook String?
+  linkInstagram String?
+  linkTwitter   String?
+  linkLinkedin  String?
+  copyRight    String?
+  imageLogo    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Product {
+  id           Int     @id @default(autoincrement())
+  name         String
+  desc         String
+  link         String?
+  image        String?
+}
+
+model Superior {
+  id           Int     @id @default(autoincrement())
+  title        String
+  desc         String
+  icon         String?
+}
+
+model Statistic {
+  id          Int     @id @default(autoincrement())
+  name        String
+  count       Int
+  image       String?
+}
+
+model Partner {
+  id          Int     @id @default(autoincrement())
+  name        String?
+  link        String?
+  image       String?
+}
+
+model Chairman {
   id             Int        @id @default(autoincrement())
-  nameTenant     String
   slug           String?    @unique
+  name           String
+  title          String
   desc           String
-  imageLogo      String?
-  address        String
-  phone          String
-  email          String
-  linkMaps       String?
-  linkFacebook   String?
-  linkInstagram  String?
-  linkTwitter    String?
-  linkLinkedin   String?
-  copyRight      String?
+  sub1           String
+  sub2           String
+  image          String?
+  position       String
+  period         String
+  createdAt      DateTime @default(now())
+  city           String
+  ToS            String
+}
+
+model VisiMisi {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  subtitle       String
+  vs             String
+  ms             String
+  moto           String
+  titleMoto      String
+
+
+
+  visi           Visi[]
+  misi           Misi[]
+}
+
+model Visi {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  
+
+  auth          VisiMisi         @relation(fields:[authId], references: [id])
+  authId        Int
+}
+
+model Misi {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+
+
+  auth          VisiMisi         @relation(fields:[authId], references: [id])
+  authId        Int
+}
+
+model Timeline {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  year           String
+  desc           String
 }

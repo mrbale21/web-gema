@@ -87,7 +87,7 @@ export default function NavbarSection() {
                   icon="/storage/template_3/assets/images/icons/icon-caret.svg"
                   items={menu.submenus.map((sub) => ({
                     label: sub.label,
-                    href: sub.href,
+                    href: sub.href as string,
                     icon: <sub.icon size={35} className="" />,
                   }))}
                   cols={2}
@@ -97,7 +97,7 @@ export default function NavbarSection() {
               ) : (
                 <li key={index}>
                   <Link
-                    href={menu.href}
+                    href={menu.href as string}
                     className={`${
                       isPastBanner ? "text-black" : "text-black"
                     } hover:text-primary text-xl font-semibold transition duration-200`}
@@ -176,7 +176,10 @@ export default function NavbarSection() {
                                 : "text-gray-700"
                             }`}
                           />
-                          <Link href={sub.href} className="block text-center">
+                          <Link
+                            href={sub.href as string}
+                            className="block text-center"
+                          >
                             {sub.label}
                           </Link>
                         </li>
@@ -185,7 +188,7 @@ export default function NavbarSection() {
                   </>
                 ) : (
                   <Link
-                    href={menu.href}
+                    href={menu.href as string}
                     className="flex items-center justify-center gap-2 transition-all duration-200 hover:text-primary hover:translate-x-[2px]"
                     onClick={() => setIsOpen(false)}
                   >

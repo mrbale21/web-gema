@@ -24,6 +24,7 @@ interface Comment {
   comment: string;
   status: string;
   createdAt: string;
+  tag: string;
 }
 
 const NewsDetailPage = () => {
@@ -35,6 +36,20 @@ const NewsDetailPage = () => {
   const [content, setContent] = useState("");
   const [status, setStatus] = useState("");
   const [loadingComment, setLoadingComment] = useState(false);
+  const [allNews, setAllNews] = useState<any[]>([]);
+  const [allTenant, setAllTenant] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("/api/news")
+      .then((res) => res.json())
+      .then((data) => setAllNews(data));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/tenant")
+      .then((res) => res.json())
+      .then((data) => setAllTenant(data));
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -100,32 +115,11 @@ const NewsDetailPage = () => {
   const [likes, setLikes] = useState(47);
   const [isLiked, setIsLiked] = useState(false);
 
-  const relatedNews = [
-    {
-      id: 2,
-      title: "Prestasi Gemilang Tim Robotika di Kompetisi Nasional",
-      image:
-        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=300&h=200&fit=crop",
-      date: "2024-08-03",
-      category: "Prestasi",
-    },
-    {
-      id: 3,
-      title: "Program Beasiswa untuk Siswa Berprestasi",
-      image:
-        "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=300&h=200&fit=crop",
-      date: "2024-08-01",
-      category: "Akademik",
-    },
-    {
-      id: 4,
-      title: "Kerjasama dengan Universitas Terkemuka",
-      image:
-        "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=300&h=200&fit=crop",
-      date: "2024-07-30",
-      category: "Kemitraan",
-    },
-  ];
+  const tenantData = allTenant;
+
+  const relatedNews = allNews
+    .filter((item) => item.id !== Number(id))
+    .slice(0, 3);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -159,7 +153,7 @@ const NewsDetailPage = () => {
     <LayoutPage
       title="Detail Berita"
       titlePage="Detail Berita"
-      desc="Detail Beritaaa"
+      desc={news.title}
     >
       <div className="max-w-6xl mx-auto px-4 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -184,7 +178,7 @@ const NewsDetailPage = () => {
                   )}
                   <div className="absolute top-4 left-4">
                     <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Kegiatan Sekolah
+                      {news.tag}
                     </span>
                   </div>
                 </div>
@@ -196,54 +190,27 @@ const NewsDetailPage = () => {
                   </h1>
 
                   {/* Meta Info */}
-                  <div className="flex flex-wrap items-center text-gray-500 text-sm mb-6 gap-4">
+                  <div className="flex flex-wrap items-center text-gray-500 text-sm mb-6 gap-8">
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2" />
-                      {news.createdAt}
+                      {new Date(news.createdAt).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
                     </div>
                     <div className="flex items-center">
                       <User className="w-4 h-4 mr-2" />
                       {news.editor}
                     </div>
-                    <div className="flex items-center">
-                      <Eye className="w-4 h-4 mr-2" />
-                      1,234 views
-                    </div>
                   </div>
 
                   {/* Article Body */}
                   <div className="prose max-w-none text-gray-700 leading-relaxed">
-                    <p className="mb-6 text-lg">{news.content}</p>
-
-                    <p className="mb-6">
-                      Kegiatan yang berlangsung selama tiga hari ini
-                      menghadirkan para ahli teknologi dari berbagai perusahaan
-                      startup terkemuka. Materi yang diajarkan meliputi
-                      dasar-dasar pemrograman, desain grafis, digital marketing,
-                      dan pengembangan aplikasi mobile.
-                    </p>
-
-                    <p className="mb-6">
-                      "Kami berharap melalui workshop ini, siswa dapat lebih
-                      siap menghadapi tantangan era digital dan memiliki bekal
-                      yang cukup untuk melanjutkan pendidikan ke jenjang yang
-                      lebih tinggi," ujar Kepala Sekolah, Dr. Ahmad Wijaya,
-                      S.Pd., M.Pd.
-                    </p>
-
-                    <p className="mb-6">
-                      Workshop ini juga dilengkapi dengan sesi praktik langsung,
-                      dimana siswa dapat mencoba mengimplementasikan ilmu yang
-                      telah dipelajari. Setiap peserta akan mendapat sertifikat
-                      yang dapat menjadi nilai tambah dalam portofolio mereka.
-                    </p>
-
-                    <p>
-                      Antusiasme siswa terhadap kegiatan ini sangat tinggi,
-                      terlihat dari partisipasi aktif mereka selama kegiatan
-                      berlangsung. Kedepannya, sekolah berencana untuk
-                      mengadakan workshop serupa secara berkala.
-                    </p>
+                    <div
+                      className="mb-6 text-lg"
+                      dangerouslySetInnerHTML={{ __html: news.content }}
+                    />
                   </div>
 
                   {/* Social Actions */}
@@ -382,7 +349,7 @@ const NewsDetailPage = () => {
                 ))}
               </div>
               <Link
-                href={"/News"}
+                href={"/page/news"}
                 className="text-center w-full mt-6 hover:text-secondary font-medium text-primary transition-colors"
               >
                 Lihat Semua Berita →
@@ -390,31 +357,31 @@ const NewsDetailPage = () => {
             </div>
 
             {/* Quick Info */}
-            <div className="bg-primary rounded-xl p-6 text-white">
-              <h3 className="text-lg font-bold mb-4">Informasi Sekolah</h3>
-              <div className="space-y-3 text-sm">
-                <div>
-                  <strong>Alamat:</strong>
-                  <br />
-                  Jl. Pendidikan No. 123
-                  <br />
-                  Jakarta Selatan 12345
+            {tenantData.map((tenant) => (
+              <div className="bg-primary rounded-xl p-6 text-white">
+                <h3 className="text-lg font-bold mb-4">Informasi Sekolah</h3>
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <strong>Alamat:</strong>
+                    <br />
+                    {tenant.address}
+                  </div>
+                  <div>
+                    <strong>Telepon:</strong>
+                    <br />
+                    {tenant.phone}
+                  </div>
+                  <div>
+                    <strong>Email:</strong>
+                    <br />
+                    {tenant.email}
+                  </div>
                 </div>
-                <div>
-                  <strong>Telepon:</strong>
-                  <br />
-                  (021) 123-4567
-                </div>
-                <div>
-                  <strong>Email:</strong>
-                  <br />
-                  info@smamajubersama.sch.id
-                </div>
+                <button className="w-full mt-4 bg-white hover:bg-secondary hover:text-white text-primary py-2 rounded-lg font-medium transition-colors">
+                  Hubungi Kami
+                </button>
               </div>
-              <button className="w-full mt-4 bg-white hover:bg-secondary hover:text-white text-primary py-2 rounded-lg font-medium transition-colors">
-                Hubungi Kami
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>

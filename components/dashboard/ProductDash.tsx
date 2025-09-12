@@ -6,38 +6,35 @@ import { BsPencilSquare } from "react-icons/bs";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
 
-interface News {
+interface Product {
   id: number;
-  title: string;
-  slug: string;
-  tag: string;
-  editor: string;
-  content: string;
+  name: string;
+  desc: string;
+  link: string;
   image?: string | null;
   createdAt: string;
 }
 
-export default function NewsListPage() {
-  const [news, setNews] = useState<News[]>([]);
+export default function ProductDash() {
+  const [Product, setProduct] = useState<Product[]>([]);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [error, setError] = useState("");
-  const [selectedNews, setSelectedNews] = useState<News | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tag, setTag] = useState("");
-  const [editor, setEditor] = useState("");
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const [link, setLink] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const fetchNews = async () => {
-    const res = await fetch("/api/news");
+  const fetchProduct = async () => {
+    const res = await fetch("/api/product");
     const data = await res.json();
-    setNews(data);
+    setProduct(data);
   };
 
   useEffect(() => {
-    fetchNews();
+    fetchProduct();
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,14 +49,13 @@ export default function NewsListPage() {
     setError("");
 
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", content);
-    formData.append("tag", tag);
-    formData.append("editor", editor);
+    formData.append("name", name);
+    formData.append("link", link);
+    formData.append("desc", desc);
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      const res = await fetch("/api/news", {
+      const res = await fetch("/api/product", {
         method: "POST",
         body: formData,
       });
@@ -73,8 +69,8 @@ export default function NewsListPage() {
 
       setAddModal(false);
       resetForm();
-      fetchNews();
-      alert("Berita berhasil ditambahkan");
+      fetchProduct();
+      alert("Product berhasil ditambahkan");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -83,17 +79,16 @@ export default function NewsListPage() {
   // === UPDATE ===
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedNews) return;
+    if (!selectedProduct) return;
 
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", content);
-    formData.append("tag", tag);
-    formData.append("editor", editor);
+    formData.append("name", name);
+    formData.append("link", link);
+    formData.append("desc", desc);
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      const res = await fetch(`/api/news/${selectedNews.id}`, {
+      const res = await fetch(`/api/product/${selectedProduct.id}`, {
         method: "PUT",
         body: formData,
       });
@@ -106,8 +101,8 @@ export default function NewsListPage() {
 
       setEditModal(false);
       resetForm();
-      fetchNews();
-      alert("Berita berhasil diupdate");
+      fetchProduct();
+      alert("Product berhasil diupdate");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -115,102 +110,99 @@ export default function NewsListPage() {
 
   // === DELETE ===
   const handleDelete = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus berita ini?")) return;
+    if (!confirm("Yakin ingin menghapus Product ini?")) return;
 
     try {
-      const res = await fetch(`/api/news/${id}`, {
+      const res = await fetch(`/api/product/${id}`, {
         method: "DELETE",
       });
 
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "Gagal menghapus berita");
+        alert(data.error || "Gagal menghapus Product");
         return;
       }
 
-      fetchNews();
-      alert("Berita berhasil dihapus");
+      fetchProduct();
+      alert("Product berhasil dihapus");
     } catch (err: any) {
       alert(err.message || "Terjadi kesalahan");
     }
   };
 
   const resetForm = () => {
-    setTitle("");
-    setContent("");
-    setEditor("");
-    setTag("");
+    setName("");
+    setLink("");
+    setDesc("");
     setImageFile(null);
-    setSelectedNews(null);
+    setSelectedProduct(null);
     setError("");
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-10 text-gray-800">
+    <div className="min-h-screen text-gray-800">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Daftar Berita</h1>
+        <h1 className="text-3xl font-bold">Daftar Product</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
         >
-          Tambah Berita
+          Tambah Product
         </button>
       </div>
 
-      {/* === LIST BERITA === */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-        {news.map((item, idx) => (
+      {/* === LIST Product === */}
+      <div className="space-y-6">
+        {Product.map((item) => (
           <div
-            key={idx}
-            className="bg-accent rounded-md overflow-hidden shadow-sm"
+            key={item.id}
+            className="flex items-start gap-4 p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-300"
           >
-            <div className="relative w-full h-56">
+            {/* Image */}
+            <div className="w-32 h-24 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
               {item.image ? (
                 <img
                   src={item.image}
-                  alt={item.title}
+                  alt={item.name}
                   className="object-cover w-full h-full"
                 />
               ) : (
-                "No Image"
+                <div className="flex items-center justify-center w-full h-full text-gray-500">
+                  No Image
+                </div>
               )}
             </div>
-            <div className="p-6 flex flex-col gap-4">
-              <div className="flex justify-between items-center text-sm ">
-                <div className="flex items-center gap-2">
-                  <IoPersonCircleOutline className="text-lg lg:text-2xl text-primary" />
-                  <span>{item.editor || "By Admin"}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  {/* Update */}
-                  <button
-                    onClick={() => {
-                      setSelectedNews(item);
-                      setTitle(item.title);
-                      setContent(item.content);
-                      setTag(item.tag);
-                      setEditor(item.editor);
-                      setEditModal(true);
-                    }}
-                  >
-                    <BsPencilSquare className="text-xl text-blue-500 hover:text-blue-600" />
-                  </button>
 
-                  {/* Delete */}
-                  <button onClick={() => handleDelete(item.id)}>
-                    <MdDelete className="text-2xl text-red-500 hover:text-red-600" />
-                  </button>
-                </div>
+            {/* Text content */}
+            <div className="flex-1 flex flex-col gap-1">
+              <h2 className="text-lg font-semibold text-black">{item.name}</h2>
+
+              {item.desc && (
+                <p className="text-sm text-gray-700 line-clamp-3">
+                  {item.desc}
+                </p>
+              )}
+
+              {/* Optional actions */}
+              <div className="mt-2 flex gap-2 text-sm">
+                <button
+                  onClick={() => {
+                    setSelectedProduct(item);
+                    setName(item.name);
+                    setDesc(item.desc);
+                    setEditModal(true);
+                  }}
+                  className="text-blue-500 hover:text-blue-600"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(item.id)}
+                  className="text-red-500 hover:text-red-600"
+                >
+                  Delete
+                </button>
               </div>
-
-              <Link
-                href={`/News/${item.slug}`}
-                className="text-lg font-bold text-black hover:text-primary cursor-pointer"
-              >
-                {item.title}
-              </Link>
-              <p className="text-sm text-black/50">{item.createdAt}</p>
-              <p className="text-sm text-black/60">{item.content}</p>
             </div>
           </div>
         ))}
@@ -225,34 +217,27 @@ export default function NewsListPage() {
           >
             <input
               type="text"
-              placeholder="Judul"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              placeholder="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
               className="w-full border rounded-lg p-3"
             />
+
             <textarea
-              placeholder="Content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
+              placeholder="Deskripsi"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
             <input
               type="text"
-              placeholder="Tag"
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
+              placeholder="Link"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
-            <input
-              type="text"
-              placeholder="Editor"
-              value={editor}
-              onChange={(e) => setEditor(e.target.value)}
-              required
-              className="w-full border rounded-lg p-3"
-            />
+
             <input type="file" accept="image/*" onChange={handleFileChange} />
 
             {error && <p className="text-red-500">{error}</p>}
@@ -275,7 +260,7 @@ export default function NewsListPage() {
       )}
 
       {/* === MODAL UPDATE === */}
-      {editModal && selectedNews && (
+      {editModal && selectedProduct && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <form
             onSubmit={handleUpdate}
@@ -284,31 +269,23 @@ export default function NewsListPage() {
             <input
               type="text"
               placeholder="Judul"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
               className="w-full border rounded-lg p-3"
             />
+
             <textarea
-              placeholder="Content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
+              placeholder="Deskripsi"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
             <input
               type="text"
-              placeholder="Tag"
-              value={tag}
-              onChange={(e) => setTag(e.target.value)}
-              className="w-full border rounded-lg p-3"
-            />
-            <input
-              type="text"
-              placeholder="Editor"
-              value={editor}
-              onChange={(e) => setEditor(e.target.value)}
-              required
+              placeholder="Sub Judul"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
             <input type="file" accept="image/*" onChange={handleFileChange} />
