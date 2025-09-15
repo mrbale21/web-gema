@@ -59,10 +59,9 @@ export default function Chairman() {
               <div className="absolute bottom-4 left-4 w-16 h-16 bg-secondary rounded-full opacity-30"></div>
 
               <div className="relative bg-primary rounded-2xl aspect-[3/4] flex items-center justify-center overflow-hidden">
-                <Image
+                <img
                   src={chairman.image || "/default.jpg"}
                   alt={chairman.name}
-                  fill
                   className="object-cover"
                 />
               </div>

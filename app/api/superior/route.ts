@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         desc: formData.get("desc") as string,
       };
 
-      const iconFile = formData.get("image") as File | null;
+      const iconFile = formData.get("icon") as File | null;
       if (iconFile) {
         const bytes = await iconFile.arrayBuffer();
         const buffer = Buffer.from(bytes);

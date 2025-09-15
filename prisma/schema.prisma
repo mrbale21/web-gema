@@ -119,9 +119,9 @@ model Chairman {
   slug           String?    @unique
   name           String
   title          String
-  desc           String
   sub1           String
   sub2           String
+  content        String   @default("")
   image          String?
   position       String
   period         String
@@ -139,9 +139,6 @@ model VisiMisi {
   ms             String
   moto           String
   titleMoto      String
-
-
-
   visi           Visi[]
   misi           Misi[]
 }
@@ -150,8 +147,6 @@ model Visi {
   id             Int        @id @default(autoincrement())
   slug           String?    @unique
   title          String
-  
-
   auth          VisiMisi         @relation(fields:[authId], references: [id])
   authId        Int
 }
@@ -160,8 +155,6 @@ model Misi {
   id             Int        @id @default(autoincrement())
   slug           String?    @unique
   title          String
-
-
   auth          VisiMisi         @relation(fields:[authId], references: [id])
   authId        Int
 }
@@ -172,4 +165,38 @@ model Timeline {
   title          String
   year           String
   desc           String
+} 
+
+model Program {
+  id           Int     @id @default(autoincrement())
+  title        String
+  desc         String
+  icon         String?
+}
+
+model Gallery {
+  id        Int      @id @default(autoincrement())
+  name      String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+}
+
+model Video {
+  id        Int      @id @default(autoincrement())
+  name      String
+  videoUrl  String?   
+  type      VideoType
+  createdAt DateTime @default(now())
+}
+
+enum VideoType {
+  YOUTUBE
+  LOCAL
+}
+
+model Principle {
+  id           Int     @id @default(autoincrement())
+  title        String
+  desc         String
+  icon         String?
 }

@@ -31,7 +31,7 @@ export default function VisiMisi() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/visi-misi")
+    fetch("/api/visimisi")
       .then((res) => res.json())
       .then((json) => {
         if (json.length > 0) {

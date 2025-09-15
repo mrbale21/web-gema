@@ -10,17 +10,17 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [currentPage, setCurrentPage] = useState("dashboard");
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* === Sidebar === */}
-      <Sidebar />
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* === Konten Utama === */}
-      <div className="flex-1 ml-64">
-        <Header />
-        <main className="p-8">{children}</main>
+      {/* Konten utama */}
+      <div className="flex-1 md:ml-64">
+        <Header onToggleSidebar={() => setSidebarOpen(true)} />
+        <main className="p-4 md:p-8">{children}</main>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { prisma } from "../prisma";
 
-export async function getAllChairman() {
-  return prisma.chairman.findMany({
+export async function getChairman() {
+  return prisma.chairman.findFirst({
     orderBy: { id: "desc" },
   });
 }

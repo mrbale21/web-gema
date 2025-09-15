@@ -4,9 +4,9 @@ import {
   FileText,
   Users,
   Settings,
-  Plus,
   ChevronDown,
   ChevronRight,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,22 +15,59 @@ import { useState } from "react";
 const navItems = [
   { id: "/admin/dashboard", label: "Dashboard", icon: Home },
   {
+    id: "head",
+    label: "Header",
+    icon: FileText,
+    children: [
+      { id: "/admin/dashboard/menu", label: "Navbar", icon: FileText },
+      { id: "/admin/dashboard/banner", label: "Banner", icon: FileText },
+    ],
+  },
+  {
     id: "posts",
     label: "Beranda",
     icon: FileText,
     children: [
       { id: "/admin/dashboard/news", label: "News", icon: FileText },
-      { id: "/admin/dashboard/banner", label: "Banner", icon: FileText },
       { id: "/admin/dashboard/product", label: "Produk", icon: FileText },
+      { id: "/admin/dashboard/chairman", label: "Ketua Umum", icon: FileText },
       { id: "/admin/dashboard/statistic", label: "Statistik", icon: FileText },
+      { id: "/admin/dashboard/partner", label: "Partner", icon: FileText },
+      { id: "/admin/dashboard/superior", label: "Keunggulan", icon: FileText },
+      {
+        id: "/admin/dashboard/documentasi",
+        label: "Dokumentasi",
+        icon: FileText,
+      },
+    ],
+  },
+  {
+    id: "profile",
+    label: "Profile",
+    icon: FileText,
+    children: [
+      { id: "/admin/dashboard/timeline", label: "Sejarah", icon: FileText },
+      { id: "/admin/dashboard/visi-misi", label: "Visi Misi", icon: FileText },
+      { id: "/admin/dashboard/program", label: "Program", icon: FileText },
+      {
+        id: "/admin/dashboard/principle",
+        label: "Nilai & Prinsip",
+        icon: FileText,
+      },
     ],
   },
   { id: "/admin/dashboard/users", label: "Users", icon: Users },
-  { id: "/admin/dashboard/Informasi", label: "Tenant", icon: Users },
+  { id: "/admin/dashboard/tenant", label: "Informasi", icon: Users },
   { id: "/admin/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<string[]>([]);
 
@@ -41,79 +78,102 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r border-gray-100 z-40">
-      <div className="p-6 border-b border-gray-100">
-        <h1 className="text-2xl font-bold text-gray-900">CMS Dashboard</h1>
-        <p className="text-sm text-gray-600 mt-1">Content Management</p>
-      </div>
+    <>
+      {/* Overlay di mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      <nav className="p-4">
-        <ul className="space-y-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const hasChildren = item.children && item.children.length > 0;
-            const isOpen = openMenus.includes(item.id);
+      {/* Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg border-r border-gray-100 z-50 transform transition-transform duration-200 
+        ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        {/* Header Sidebar */}
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-gray-900">CMS Dashboard</h1>
+          <button
+            onClick={onClose}
+            className="md:hidden p-2 rounded hover:bg-gray-100"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
-            return (
-              <li key={item.id}>
-                {!hasChildren ? (
-                  <Link
-                    href={item.id}
-                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors cursor-pointer ${
-                      pathname === item.id
-                        ? "bg-blue-50 text-blue-700 border border-blue-200"
-                        : "text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    <Icon className="h-5 w-5 mr-3" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => toggleMenu(item.id)}
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
+        {/* Menu */}
+        <nav className="p-4 overflow-y-auto h-[calc(100%-80px)]">
+          <ul className="space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const hasChildren = item.children && item.children.length > 0;
+              const isMenuOpen = openMenus.includes(item.id);
+
+              return (
+                <li key={item.id}>
+                  {!hasChildren ? (
+                    <Link
+                      href={item.id}
+                      className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+                        pathname === item.id
+                          ? "bg-blue-50 text-blue-700 border border-blue-200"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                      onClick={onClose} // 🔥 tutup sidebar kalau klik menu (di mobile)
                     >
-                      <div className="flex items-center space-x-3">
-                        <Icon className="h-5 w-5" />
-                        <span className="font-medium">{item.label}</span>
-                      </div>
-                      {isOpen ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </button>
+                      <Icon className="h-5 w-5 mr-3" />
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleMenu(item.id)}
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <Icon className="h-5 w-5" />
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        {isMenuOpen ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
 
-                    {isOpen && (
-                      <ul className="mt-1 ml-6 space-y-1">
-                        {item.children.map((child) => {
-                          const ChildIcon = child.icon;
-                          return (
-                            <li key={child.id}>
-                              <Link
-                                href={child.id}
-                                className={`w-full flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
-                                  pathname === child.id
-                                    ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                    : "text-gray-600 hover:bg-gray-100"
-                                }`}
-                              >
-                                <ChildIcon className="h-4 w-4 mr-2" />
-                                <span className="text-sm">{child.label}</span>
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </div>
+                      {isMenuOpen && (
+                        <ul className="mt-1 ml-6 space-y-1">
+                          {item.children.map((child) => {
+                            const ChildIcon = child.icon;
+                            return (
+                              <li key={child.id}>
+                                <Link
+                                  href={child.id}
+                                  className={`w-full flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                                    pathname === child.id
+                                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                      : "text-gray-600 hover:bg-gray-100"
+                                  }`}
+                                  onClick={onClose} // 🔥 tutup sidebar kalau klik submenu
+                                >
+                                  <ChildIcon className="h-4 w-4 mr-2" />
+                                  <span className="text-sm">{child.label}</span>
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+    </>
   );
 }

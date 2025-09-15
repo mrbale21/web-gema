@@ -1,10 +1,10 @@
-import { createChairman, getAllChairman } from "@/lib/services/chairmanService";
+import { createChairman, getChairman } from "@/lib/services/chairmanService";
 import fs from "fs";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const chairman = await getAllChairman();
+    const chairman = await getChairman();
     return NextResponse.json(chairman);
   } catch (err) {
     return NextResponse.json(
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         period,
         ToS,
         createdAt,
-        image, // bisa langsung URL
+        image,
       } = body;
 
       const chairman = await createChairman(

@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
+    "dompurify": "^3.2.6",
     "formidable": "^3.5.4",
     "framer-motion": "^12.23.12",
     "jose": "^6.1.0",

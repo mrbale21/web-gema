@@ -56,6 +56,7 @@ export default function TenantDashboard() {
     try {
       const formData = new FormData();
       Object.entries(tenant).forEach(([key, value]) => {
+        if (key === "id") return; // ⬅️ skip id
         if (value) formData.append(key, value as string);
       });
       if (imageFile) formData.append("image", imageFile);
@@ -80,7 +81,7 @@ export default function TenantDashboard() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Dashboard Tenant</h1>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">Informasi</h1>
 
       {Object.keys(tenant).map((key) => {
         if (key === "id" || key === "imageLogo") return null;
@@ -103,14 +104,27 @@ export default function TenantDashboard() {
       })}
 
       <div className="mb-4">
-        <label className="block font-semibold">Logo Tenant</label>
-        <input type="file" onChange={handleFileChange} />
+        <label className="block font-semibold text-gray-800 mb-2">
+          Logo Tenant
+        </label>
+
         {tenant.imageLogo && (
           <img
             src={tenant.imageLogo}
             alt="Logo"
-            className="mt-2 h-24 w-24 object-contain"
+            className="my-2 h-24 w-24 object-contain"
           />
+        )}
+
+        <label className="flex items-center text-sm px-4 py-1 bg-gray-800 text-white rounded cursor-pointer hover:bg-gray-600 w-fit">
+          <span>Pilih File</span>
+          <input type="file" className="hidden" onChange={handleFileChange} />
+        </label>
+
+        {imageFile && (
+          <p className="mt-2 text-sm text-gray-600">
+            File dipilih: {imageFile.name}
+          </p>
         )}
       </div>
 

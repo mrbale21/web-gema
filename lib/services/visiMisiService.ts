@@ -1,8 +1,7 @@
-import { prisma } from "../prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function getAllVisiMisi() {
   return prisma.visiMisi.findMany({
-    orderBy: { id: "desc" },
     include: {
       visi: true,
       misi: true,
@@ -11,15 +10,13 @@ export async function getAllVisiMisi() {
 }
 
 export async function getVisiMisiById(id: number) {
-  return prisma.visiMisi.findUnique({ where: { id } });
-}
-
-// Fungsi sederhana untuk slug
-function generateSlug(name: string) {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "");
+  return prisma.visiMisi.findUnique({
+    where: { id },
+    include: {
+      visi: true,
+      misi: true,
+    },
+  });
 }
 
 export async function createVisiMisi(
@@ -29,34 +26,36 @@ export async function createVisiMisi(
   ms: string,
   moto: string,
   titleMoto: string,
-  visi?: { title?: string }[],
-  misi?: { title?: string }[]
+  visi?: { title: string }[],
+  misi?: { title: string }[]
 ) {
-  const slug = generateSlug(title);
-
   return prisma.visiMisi.create({
     data: {
-      slug,
       title,
       subtitle,
       vs,
       ms,
       moto,
       titleMoto,
-      visi: visi
-        ? {
-            create: visi.map((v) => ({
-              title: v.title ?? "",
-            })),
-          }
-        : undefined,
-      misi: misi
-        ? {
-            create: misi.map((m) => ({
-              title: m.title ?? "",
-            })),
-          }
-        : undefined,
+      slug: title.toLowerCase().replace(/\s+/g, "-"),
+      visi:
+        visi && visi.length > 0
+          ? {
+              create: visi.map((v) => ({
+                title: v.title,
+                slug: v.title.toLowerCase().replace(/\s+/g, "-"),
+              })),
+            }
+          : undefined,
+      misi:
+        misi && misi.length > 0
+          ? {
+              create: misi.map((m) => ({
+                title: m.title,
+                slug: m.title.toLowerCase().replace(/\s+/g, "-"),
+              })),
+            }
+          : undefined,
     },
     include: {
       visi: true,
@@ -73,54 +72,30 @@ export async function updateVisiMisi(
   ms: string,
   moto: string,
   titleMoto: string,
-  visi?: { id?: number; title?: string }[],
-  misi?: { id?: number; title?: string }[]
+  visi?: { title: string }[],
+  misi?: { title: string }[]
 ) {
-  try {
-    const updateVisiMisi = await prisma.visiMisi.update({
-      where: { id },
-      data: {
-        title,
-        subtitle,
-        vs,
-        ms,
-        moto,
-        titleMoto,
-        visi: visi
-          ? {
-              upsert: visi.map((v) => ({
-                where: { id: v.id ?? 0 }, // pakai 0 kalau id undefined
-                create: { title: v.title ?? "" },
-                update: { title: v.title ?? "" },
-              })),
-            }
-          : undefined,
-        misi: misi
-          ? {
-              upsert: misi.map((m) => ({
-                where: { id: m.id ?? 0 },
-                create: { title: m.title ?? "" },
-                update: { title: m.title ?? "" },
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        visi: true,
-        misi: true,
-      },
-    });
-
-    return updateVisiMisi;
-  } catch (err) {
-    throw new Error(`Gagal update VisiMisi: ${err}`);
-  }
+  return prisma.visiMisi.update({
+    where: { id },
+    data: {
+      title,
+      subtitle,
+      vs,
+      ms,
+      moto,
+      titleMoto,
+      slug: title.toLowerCase().replace(/\s+/g, "-"),
+      // update nested kalau mau lebih advance
+    },
+    include: {
+      visi: true,
+      misi: true,
+    },
+  });
 }
 
 export async function deleteVisiMisi(id: number) {
-  try {
-    return await prisma.visiMisi.delete({ where: { id } });
-  } catch (error) {
-    throw new Error(`VisiMisi dengan ID tersebut tidak ditemukan, ${error}`);
-  }
+  return prisma.visiMisi.delete({
+    where: { id },
+  });
 }

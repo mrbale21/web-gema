@@ -63,7 +63,7 @@ export async function PUT(
 
     const updatedpartner = await updatePartner(partnerId, {
       ...data,
-      imageLogo: imageUrl ?? data.imageLogo,
+      image: imageUrl ?? data.image,
     });
 
     return NextResponse.json(updatedpartner);
