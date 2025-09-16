@@ -1,29 +1,35 @@
 "use client";
 
+import { PartnerType } from "@/types/partner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BsPencilSquare } from "react-icons/bs";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
-
-interface Partner {
-  id: number;
-  name: string;
-  link: string;
-  image?: string | null;
-  createdAt: string;
-}
+import ConfirmAlert from "../Common/ConfirmAlert";
+import Alert from "../Common/Alert";
 
 export default function PartnerDash() {
-  const [partner, setPartner] = useState<Partner[]>([]);
+  const [partner, setPartner] = useState<PartnerType[]>([]);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [error, setError] = useState("");
-  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+  const [selectedPartner, setSelectedPartner] = useState<PartnerType | null>(
+    null
+  );
 
   const [name, setName] = useState("");
   const [link, setLink] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   const fetchPartner = async () => {
     const res = await fetch("/api/partner");
@@ -67,7 +73,7 @@ export default function PartnerDash() {
       setAddModal(false);
       resetForm();
       fetchPartner();
-      alert("Partner berhasil ditambahkan");
+      setAlert({ type: "success", message: "Data berhasil ditambahkan!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -98,7 +104,7 @@ export default function PartnerDash() {
       setEditModal(false);
       resetForm();
       fetchPartner();
-      alert("Partner berhasil diupdate");
+      setAlert({ type: "success", message: "Data berhasil diperbarui!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -106,24 +112,41 @@ export default function PartnerDash() {
 
   // === DELETE ===
   const handleDelete = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus Partner ini?")) return;
-
-    try {
-      const res = await fetch(`/api/partner/${id}`, {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Gagal menghapus Partner");
-        return;
-      }
-
-      fetchPartner();
-      alert("Partner berhasil dihapus");
-    } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan");
-    }
+    setAlert({
+      type: "warning",
+      message: `Apakah anda yakin ingin menghapus ?`,
+      show: true,
+      onConfirm: async () => {
+        setAlert(null);
+        try {
+          const res = await fetch(`/api/partner/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setAlert({
+              type: "error",
+              message: data.error || "Gagal hapus data",
+              show: true,
+            });
+            return;
+          }
+          fetchPartner();
+          setAlert({
+            type: "success",
+            message: "data berhasil dihapus!",
+            show: true,
+          });
+        } catch (err: any) {
+          setAlert({
+            type: "error",
+            message: err.message || "Terjadi kesalahan",
+            show: true,
+          });
+        }
+      },
+      onCancel: () => setAlert(null),
+    });
   };
 
   const resetForm = () => {
@@ -136,6 +159,24 @@ export default function PartnerDash() {
 
   return (
     <div className="min-h-screen text-gray-800">
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Daftar Partner</h1>
         <button
@@ -177,7 +218,7 @@ export default function PartnerDash() {
                 <button
                   onClick={() => {
                     setSelectedPartner(item);
-                    setName(item.name);
+                    setName(item.name || "name");
 
                     setEditModal(true);
                   }}

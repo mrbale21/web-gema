@@ -7,21 +7,22 @@ import { BsPencilSquare } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
-
-interface News {
-  id: number;
-  title: string;
-  slug: string;
-  tag: string;
-  editor: string;
-  content: string;
-  image?: string | null;
-  createdAt: string;
-}
+import { NewsType } from "@/types/news";
+import ConfirmAlert from "@/components/Common/ConfirmAlert";
+import Alert from "@/components/Common/Alert";
 
 export default function NewsListPage() {
-  const [news, setNews] = useState<News[]>([]);
+  const [news, setNews] = useState<NewsType[]>([]);
   const router = useRouter();
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   const fetchNews = async () => {
     const res = await fetch("/api/news");
@@ -34,33 +35,70 @@ export default function NewsListPage() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus berita ini?")) return;
-
-    try {
-      const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Gagal menghapus berita");
-        return;
-      }
-
-      fetchNews();
-      alert("Berita berhasil dihapus");
-    } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan");
-    }
+    setAlert({
+      type: "warning",
+      message: `Apakah anda yakin ingin menghapus ?`,
+      show: true,
+      onConfirm: async () => {
+        setAlert(null);
+        try {
+          const res = await fetch(`/api/news/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setAlert({
+              type: "error",
+              message: data.error || "Gagal hapus data",
+              show: true,
+            });
+            return;
+          }
+          fetchNews();
+          setAlert({
+            type: "success",
+            message: "data berhasil dihapus!",
+            show: true,
+          });
+        } catch (err: any) {
+          setAlert({
+            type: "error",
+            message: err.message || "Terjadi kesalahan",
+            show: true,
+          });
+        }
+      },
+      onCancel: () => setAlert(null),
+    });
   };
 
   return (
     <div className="min-h-screen text-gray-800">
-      <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
+      <div className="flex justify-between gap-4 items-center mb-6">
         <h1 className="text-gray-900 font-bold text-xl">Data Berita</h1>
         <button
           onClick={() => router.push("/admin/dashboard/news/add-news")}
-          className="bg-primary text-white p-2 rounded-full hover:bg-primary/90 flex items-center gap-3"
+          className="bg-primary text-white p-2 px-4 rounded-lg hover:bg-primary/90 flex items-center gap-3"
         >
-          <FaPlus />
+          <FaPlus /> Tambah Berita
         </button>
       </div>
 

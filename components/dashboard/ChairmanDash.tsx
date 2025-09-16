@@ -2,27 +2,25 @@
 import BlogTextEditor from "@/components/Common/TextEditor";
 import { useEffect, useState } from "react";
 import DOMPurify from "dompurify"; // penting untuk sanitize HTML
-
-interface Chairman {
-  id: number;
-  title: string;
-  sub1: string;
-  sub2: string;
-  content: string;
-  position: string;
-  period: string;
-  createdAt: string;
-  city: string;
-  ToS: string;
-  image?: string | null;
-}
+import { ChairmanType } from "@/types/chairman";
+import ConfirmAlert from "../Common/ConfirmAlert";
+import Alert from "../Common/Alert";
 
 export default function ChairmanDashboard() {
-  const [chairman, setChairman] = useState<Chairman | null>(null);
+  const [chairman, setChairman] = useState<ChairmanType | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [fieldValue, setFieldValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   useEffect(() => {
     fetchChairman();
@@ -34,17 +32,17 @@ export default function ChairmanDashboard() {
       const data = await res.json();
       setChairman(data);
     } catch {
-      alert("Gagal fetch chairman");
+      setAlert({ type: "error", message: "Gagal!" });
     }
   };
 
-  const handleEdit = (key: keyof Chairman) => {
+  const handleEdit = (key: keyof ChairmanType) => {
     if (!chairman) return;
     setEditingField(key);
     setFieldValue(chairman[key] as string);
   };
 
-  const handleSave = async (field: keyof Chairman) => {
+  const handleSave = async (field: keyof ChairmanType) => {
     if (!chairman) return;
     setLoading(true);
     try {
@@ -56,8 +54,9 @@ export default function ChairmanDashboard() {
       const updated = await res.json();
       setChairman(updated);
       setEditingField(null);
+      setAlert({ type: "success", message: "Data berhasil diperbarui!" });
     } catch {
-      alert("Gagal update field");
+      setAlert({ type: "error", message: "Gagal update!" });
     } finally {
       setLoading(false);
     }
@@ -74,11 +73,11 @@ export default function ChairmanDashboard() {
         method: "PUT",
         body: formData,
       });
-
+      setAlert({ type: "success", message: "Image berhasil diperbarui!" });
       const updated = await res.json();
       setChairman(updated);
     } catch {
-      alert("Gagal upload foto");
+      setAlert({ type: "error", message: "Gagal upload Image!" });
     } finally {
       setUploading(false);
     }
@@ -88,6 +87,24 @@ export default function ChairmanDashboard() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
       <h1 className="text-3xl font-bold mb-8 text-gray-800">Ketua Umum</h1>
 
       <div className="space-y-6">
@@ -119,7 +136,7 @@ export default function ChairmanDashboard() {
                   )}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleSave(key as keyof Chairman)}
+                      onClick={() => handleSave(key as keyof ChairmanType)}
                       disabled={loading}
                       className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
                     >
@@ -156,7 +173,7 @@ export default function ChairmanDashboard() {
                     </span>
                   )}
                   <button
-                    onClick={() => handleEdit(key as keyof Chairman)}
+                    onClick={() => handleEdit(key as keyof ChairmanType)}
                     className="text-blue-500 hover:text-blue-700 font-medium ml-3 border px-2 text-sm"
                   >
                     Edit

@@ -4,7 +4,50 @@ import {
   getTenant,
   updateTenant,
   deleteTenant,
+  createTenant,
 } from "@/lib/services/tenantServices";
+import { uploadToS3Buffer } from "@/lib/s3";
+
+export async function POST(req: NextRequest) {
+  try {
+    let data: Record<string, any> = {};
+    let imageUrl: string | undefined;
+
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+
+      for (const [key, value] of formData.entries()) {
+        if (key === "imageLogo" && value instanceof File) {
+          const buffer = await streamToBuffer(value.stream());
+          const fileName = `${Date.now()}-${value.name}`;
+          const s3Key = `tenantLogo/${fileName}`;
+
+          // upload ke S3
+          imageUrl = await uploadToS3Buffer(
+            buffer,
+            s3Key,
+            value.type || "image/jpeg"
+          );
+        } else {
+          data[key] = value;
+        }
+      }
+    } else {
+      data = await req.json();
+    }
+
+    const tenant = await createTenant({
+      ...data,
+      imageLogo: imageUrl ?? data.imageLogo,
+    });
+
+    return NextResponse.json(tenant);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 
 // ✅ GET tenant
 export async function GET() {
@@ -30,11 +73,16 @@ export async function PUT(req: NextRequest) {
 
       for (const [key, value] of formData.entries()) {
         if (key === "image" && value instanceof File) {
-          const bytes = await value.arrayBuffer();
-          const buffer = Buffer.from(bytes);
-          const filePath = `public/uploads/${Date.now()}-${value.name}`;
-          await fs.promises.writeFile(filePath, buffer);
-          imageUrl = "/uploads/" + filePath.split("/").pop();
+          const buffer = await streamToBuffer(value.stream());
+          const fileName = `${Date.now()}-${value.name}`;
+          const s3Key = `tenantLogo/${fileName}`;
+
+          // upload ke S3
+          imageUrl = await uploadToS3Buffer(
+            buffer,
+            s3Key,
+            value.type || "image/jpeg"
+          );
         } else {
           data[key] = value;
         }
@@ -76,4 +124,21 @@ export async function DELETE(
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+// helper konversi ReadableStream ke Buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

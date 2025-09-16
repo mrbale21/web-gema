@@ -1,30 +1,34 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BsPencilSquare } from "react-icons/bs";
-import { IoPersonCircleOutline } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
+import DynamicIcon from "../Common/DynamicIcon";
+import { availableIcons } from "../Common/AvailableIcons";
+import IconDropdown from "../Common/IconDropdown";
+import { SuperiorType } from "@/types/superior";
+import ConfirmAlert from "../Common/ConfirmAlert";
+import Alert from "../Common/Alert";
 
-interface Superior {
-  id: number;
-  title: string;
-  desc: string;
-  icon?: string | null;
-}
-
-export default function SuperDashboard() {
-  const [superior, setSuperior] = useState<Superior[]>([]);
+export default function SuperiorDashboard() {
+  const [superior, setSuperior] = useState<SuperiorType[]>([]);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [error, setError] = useState("");
-  const [selectedSuperior, setSelectedSuperior] = useState<Superior | null>(
+  const [selectedSuperior, setSelectedSuperior] = useState<SuperiorType | null>(
     null
   );
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [icon, setIcon] = useState("");
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   const fetchSuperior = async () => {
     const res = await fetch("/api/superior");
@@ -36,30 +40,19 @@ export default function SuperDashboard() {
     fetchSuperior();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setIconFile(e.target.files[0]);
-    }
-  };
-
   // === ADD ===
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("desc", desc);
-    if (iconFile) formData.append("icon", iconFile);
-
     try {
       const res = await fetch("/api/superior", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, desc, icon }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || "Something went wrong");
         return;
@@ -68,7 +61,7 @@ export default function SuperDashboard() {
       setAddModal(false);
       resetForm();
       fetchSuperior();
-      alert("Superior berhasil ditambahkan");
+      setAlert({ type: "success", message: "Data berhasil ditambahkan!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -79,15 +72,11 @@ export default function SuperDashboard() {
     e.preventDefault();
     if (!selectedSuperior) return;
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("desc", desc);
-    if (iconFile) formData.append("image", iconFile);
-
     try {
       const res = await fetch(`/api/superior/${selectedSuperior.id}`, {
         method: "PUT",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, desc, icon }),
       });
 
       const data = await res.json();
@@ -99,7 +88,7 @@ export default function SuperDashboard() {
       setEditModal(false);
       resetForm();
       fetchSuperior();
-      alert("Keunggulan berhasil diupdate");
+      setAlert({ type: "success", message: "Data berhasil diperbarui!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -107,43 +96,79 @@ export default function SuperDashboard() {
 
   // === DELETE ===
   const handleDelete = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus Superior ini?")) return;
-
-    try {
-      const res = await fetch(`/api/superior/${id}`, {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Gagal menghapus Superior");
-        return;
-      }
-
-      fetchSuperior();
-      alert("Keunggulan berhasil dihapus");
-    } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan");
-    }
+    setAlert({
+      type: "warning",
+      message: `Apakah anda yakin ingin menghapus ?`,
+      show: true,
+      onConfirm: async () => {
+        setAlert(null);
+        try {
+          const res = await fetch(`/api/superior/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setAlert({
+              type: "error",
+              message: data.error || "Gagal hapus data",
+              show: true,
+            });
+            return;
+          }
+          fetchSuperior();
+          setAlert({
+            type: "success",
+            message: "data berhasil dihapus!",
+            show: true,
+          });
+        } catch (err: any) {
+          setAlert({
+            type: "error",
+            message: err.message || "Terjadi kesalahan",
+            show: true,
+          });
+        }
+      },
+      onCancel: () => setAlert(null),
+    });
   };
 
   const resetForm = () => {
     setTitle("");
     setDesc("");
-    setIconFile(null);
+    setIcon("");
     setSelectedSuperior(null);
     setError("");
   };
 
   return (
     <div className="min-h-screen text-gray-800">
+      {/* Alert atau Confirm */}
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Daftar Superior</h1>
+        <h1 className="text-3xl font-bold">Keunggulan Gemanahdliyin</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
         >
-          Tambah Superior
+          Tambah Data
         </button>
       </div>
 
@@ -154,19 +179,12 @@ export default function SuperDashboard() {
             key={item.id}
             className="flex items-start gap-4 p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-300"
           >
-            {/* Image */}
-            <div className="w-32 h-24 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
-              {item.icon ? (
-                <img
-                  src={item.icon}
-                  alt={item.title}
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <div className="flex items-center justify-center w-full h-full text-gray-500">
-                  No Image
-                </div>
-              )}
+            {/* Icon */}
+            <div className="w-16 h-16 flex items-center justify-center bg-gray-100 rounded-lg">
+              <DynamicIcon
+                name={item.icon}
+                className="w-10 h-10 text-primary"
+              />
             </div>
 
             {/* Text content */}
@@ -178,13 +196,13 @@ export default function SuperDashboard() {
                 </p>
               )}
 
-              {/* Optional actions */}
               <div className="mt-2 flex gap-2 text-sm">
                 <button
                   onClick={() => {
                     setSelectedSuperior(item);
                     setTitle(item.title);
                     setDesc(item.desc);
+                    setIcon(item.icon || "");
                     setEditModal(true);
                   }}
                   className="text-blue-500 hover:text-blue-600"
@@ -218,15 +236,13 @@ export default function SuperDashboard() {
               required
               className="w-full border rounded-lg p-3"
             />
-
             <textarea
               placeholder="Deskripsi"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
-
-            <input type="file" accept="icon/*" onChange={handleFileChange} />
+            <IconDropdown value={icon} onChange={setIcon} />
 
             {error && <p className="text-red-500">{error}</p>}
 
@@ -262,14 +278,14 @@ export default function SuperDashboard() {
               required
               className="w-full border rounded-lg p-3"
             />
-
             <textarea
               placeholder="Deskripsi"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               className="w-full border rounded-lg p-3"
             />
-            <input type="file" accept="icon/*" onChange={handleFileChange} />
+
+            <IconDropdown value={icon} onChange={setIcon} />
 
             {error && <p className="text-red-500">{error}</p>}
 

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
 import { createGallery, getAllGallery } from "@/lib/services/documentService";
+import { uploadToS3Buffer } from "@/lib/s3";
 
 export async function GET() {
   try {
-    const Gallery = await getAllGallery();
-    return NextResponse.json(Gallery);
+    const gallery = await getAllGallery();
+    return NextResponse.json(gallery);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -31,11 +31,16 @@ export async function POST(req: NextRequest) {
 
       const imageFile = formData.get("image") as File | null;
       if (imageFile) {
-        const bytes = await imageFile.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const filePath = `public/uploads/${Date.now()}-${imageFile.name}`;
-        await fs.promises.writeFile(filePath, buffer);
-        imageUrl = "/uploads/" + filePath.split("/").pop();
+        const buffer = await streamToBuffer(imageFile.stream());
+        const fileName = `${Date.now()}-${imageFile.name}`;
+        const s3Key = `gallery/${fileName}`;
+
+        // upload ke S3
+        imageUrl = await uploadToS3Buffer(
+          buffer,
+          s3Key,
+          imageFile.type || "image/jpeg"
+        );
       }
     } else {
       return NextResponse.json(
@@ -44,10 +49,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const Gallery = await createGallery(data.name, imageUrl);
-
-    return NextResponse.json(Gallery);
+    const gallery = await createGallery(data.name, imageUrl);
+    return NextResponse.json(gallery);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+// helper konversi ReadableStream ke Buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

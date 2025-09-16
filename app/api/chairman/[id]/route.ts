@@ -1,8 +1,6 @@
-// app/api/chairman/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import fs from "fs/promises";
-import path from "path";
+import { uploadToS3Buffer } from "@/lib/s3";
 
 // GET by id
 export async function GET(
@@ -10,7 +8,7 @@ export async function GET(
   contextPromise: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await contextPromise.params; // ✅ tunggu dulu
+    const { id } = await contextPromise.params;
     const chairman = await prisma.chairman.findUnique({
       where: { id: parseInt(id, 10) },
     });
@@ -33,42 +31,51 @@ export async function GET(
 }
 
 // UPDATE by id
-
 export async function PUT(
   req: NextRequest,
   context: { params: { id: string } }
 ) {
   try {
     const id = parseInt(context.params.id, 10);
-
-    // 🔎 cek content-type
     const contentType = req.headers.get("content-type") || "";
-
     let data: any = {};
 
     if (contentType.includes("multipart/form-data")) {
-      // 🟢 HANDLE UPLOAD IMAGE
       const formData = await req.formData();
       const file = formData.get("image") as File;
 
       if (file) {
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
-        const uploadDir = path.join(process.cwd(), "public", "uploads");
-        await fs.mkdir(uploadDir, { recursive: true });
+        const buffer = await streamToBuffer(file.stream());
 
         const fileName = `${Date.now()}-${file.name}`;
-        const filePath = path.join(uploadDir, fileName);
+        const s3Key = `chairman/${fileName}`;
+        const imageUrl = await uploadToS3Buffer(
+          buffer,
+          s3Key,
+          file.type || "application/octet-stream"
+        );
 
-        await fs.writeFile(filePath, buffer);
+        data.image = imageUrl; // ✅ simpan URL S3
+      }
 
-        data.image = `/uploads/${fileName}`;
+      // Ambil field lain dari formData
+      for (const key of [
+        "name",
+        "title",
+        "sub1",
+        "sub2",
+        "desc",
+        "position",
+        "city",
+        "period",
+        "ToS",
+        "createdAt",
+      ]) {
+        const value = formData.get(key);
+        if (value !== null) data[key] = value;
       }
     } else {
-      // 🟢 HANDLE JSON UPDATE
-      const body = await req.json();
-      data = body;
+      data = await req.json();
     }
 
     const updated = await prisma.chairman.update({
@@ -92,7 +99,7 @@ export async function DELETE(
   contextPromise: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await contextPromise.params; // ✅ tunggu dulu
+    const { id } = await contextPromise.params;
 
     await prisma.chairman.delete({
       where: { id: parseInt(id, 10) },
@@ -106,4 +113,21 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+
+// helper untuk convert stream ke buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

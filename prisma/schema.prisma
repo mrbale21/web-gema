@@ -15,6 +15,18 @@ model User {
   createdAt DateTime @default(now())
 }
 
+model Attachment {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String
+  extname   String
+  size      Int
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
 model Menu {
   id        Int       @id @default(autoincrement())
   title     String
@@ -147,16 +159,16 @@ model Visi {
   id             Int        @id @default(autoincrement())
   slug           String?    @unique
   title          String
-  auth          VisiMisi         @relation(fields:[authId], references: [id])
-  authId        Int
+  auth          VisiMisi?        @relation(fields:[authId], references: [id])
+  authId        Int?
 }
 
 model Misi {
   id             Int        @id @default(autoincrement())
   slug           String?    @unique
   title          String
-  auth          VisiMisi         @relation(fields:[authId], references: [id])
-  authId        Int
+  auth          VisiMisi?        @relation(fields:[authId], references: [id])
+  authId        Int?
 }
 
 model Timeline {
@@ -199,4 +211,81 @@ model Principle {
   title        String
   desc         String
   icon         String?
+}
+
+model GemaEdTech {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+}
+
+model GemaEdTechDetail {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+  icon           String
+}
+
+model GemaKop {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+  title1          String
+  desc1           String
+}
+
+model GemaKopDetail {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+  icon           String
+}
+
+model GemaUMKM {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+}
+
+model GemaUMKMImg {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+  image          String?
+}
+
+model GemaUMKMDetail {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+  icon           String
+}
+
+model Training {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+  icon           String
+}
+
+model TrainingDetail {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  desc           String
+  icon           String
+}
+
+model TrainingBenefit {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
 }

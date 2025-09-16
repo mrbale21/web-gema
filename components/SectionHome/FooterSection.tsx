@@ -1,49 +1,72 @@
 "use client";
 
+import { TenantType } from "@/types/tenant";
 import {
   Facebook,
   Instagram,
-  Twitter,
   Mail,
-  Phone,
   MapPin,
+  Phone,
+  Twitter,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function FooterSection() {
+  const [tenant, setTenant] = useState<TenantType | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTenant = async () => {
+      try {
+        const res = await fetch("/api/tenant");
+        if (!res.ok) throw new Error("Failed to fetch tenant");
+
+        const json = await res.json();
+        setTenant(Array.isArray(json) ? json[0] : json);
+      } catch (err) {
+        console.error("Invalid API", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTenant();
+  }, []);
+
+  if (loading) return <p>Loading.....</p>;
+  if (!tenant) return <p>Data tidak ditemukan</p>;
+
   return (
     <footer className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
         {/* Logo & Deskripsi */}
         <div>
-          <h2 className="text-2xl font-bold ">Gema Nahdliyin Indonesia</h2>
-          <p className="mt-4 text-sm leading-relaxed">
-            Gema adalah sebuah komunitas yang berfokus pada pengembangan
-            kreativitas dan inovasi di bidang teknologi serta seni.
-          </p>
+          <h2 className="text-2xl font-bold">{tenant.nameTenant}</h2>
+          <p className="mt-4 text-sm leading-relaxed">{tenant.desc}</p>
         </div>
 
         {/* Navigasi */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Navigasi Cepat</h3>
-          <ul className="space-y-2  text-sm">
+          <ul className="space-y-2 text-sm">
             <li>
               <Link href="/" className="hover:text-secondary">
                 Beranda
               </Link>
             </li>
             <li>
-              <Link href="/profil" className="hover:text-secondary">
-                Profil
+              <Link href="/page/profile" className="hover:text-secondary">
+                Profile
               </Link>
             </li>
             <li>
-              <Link href="/jurusan" className="hover:text-secondary">
-                Jurusan
+              <Link href="/page/news" className="hover:text-secondary">
+                Blog
               </Link>
             </li>
             <li>
-              <Link href="/kontak" className="hover:text-secondary">
+              <Link href="/page/contact" className="hover:text-secondary">
                 Kontak
               </Link>
             </li>
@@ -53,19 +76,25 @@ export default function FooterSection() {
         {/* Kontak */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Kontak Kami</h3>
-          <ul className="space-y-3  text-sm">
-            <li className="flex items-start gap-3">
-              <MapPin size={18} className=" mt-1" />
-              Jl. Mahar Martanegara No.48, Cimahi Selatan, Kota Cimahi
-            </li>
-            <li className="flex items-center gap-3">
-              <Phone size={18} className="" />
-              (022) 1234 5678
-            </li>
-            <li className="flex items-center gap-3">
-              <Mail size={18} className="" />
-              info@gemanahdliyin.sch.id
-            </li>
+          <ul className="space-y-3 text-sm">
+            {tenant.address && (
+              <li className="flex items-start gap-3">
+                <MapPin size={18} className="mt-1" />
+                {tenant.address}
+              </li>
+            )}
+            {tenant.phone && (
+              <li className="flex items-center gap-3">
+                <Phone size={18} />
+                {tenant.phone}
+              </li>
+            )}
+            {tenant.email && (
+              <li className="flex items-center gap-3">
+                <Mail size={18} />
+                {tenant.email}
+              </li>
+            )}
           </ul>
         </div>
 
@@ -73,32 +102,41 @@ export default function FooterSection() {
         <div>
           <h3 className="text-lg font-semibold mb-4">Ikuti Kami</h3>
           <div className="flex gap-4">
-            <Link
-              href="#"
-              className="bg-secondary p-2 rounded-full hover:bg-white hover:text-primary transition"
-            >
-              <Facebook size={18} />
-            </Link>
-            <Link
-              href="#"
-              className="bg-secondary p-2 rounded-full hover:bg-white hover:text-primary transition"
-            >
-              <Instagram size={18} />
-            </Link>
-            <Link
-              href="#"
-              className="bg-secondary p-2 rounded-full hover:bg-white hover:text-primary transition"
-            >
-              <Twitter size={18} />
-            </Link>
+            {tenant.linkFacebook && (
+              <Link
+                href={tenant.linkFacebook}
+                target="_blank"
+                className="bg-secondary p-2 rounded-full hover:bg-white hover:text-primary transition"
+              >
+                <Facebook size={18} />
+              </Link>
+            )}
+            {tenant.linkInstagram && (
+              <Link
+                href={tenant.linkInstagram}
+                target="_blank"
+                className="bg-secondary p-2 rounded-full hover:bg-white hover:text-primary transition"
+              >
+                <Instagram size={18} />
+              </Link>
+            )}
+            {tenant.linkTwitter && (
+              <Link
+                href={tenant.linkTwitter}
+                target="_blank"
+                className="bg-secondary p-2 rounded-full hover:bg-white hover:text-primary transition"
+              >
+                <Twitter size={18} />
+              </Link>
+            )}
           </div>
         </div>
       </div>
 
       {/* Footer Bawah */}
-      <div className="border-t border-white/40 text-center py-4 text-sm ">
-        © {new Date().getFullYear()} Gema Nahdliyin Indonesia. All rights
-        reserved.
+      <div className="border-t border-white/40 text-center py-4 text-sm">
+        © {new Date().getFullYear()} {tenant.copyRight ?? tenant.nameTenant}.
+        All rights reserved.
       </div>
     </footer>
   );

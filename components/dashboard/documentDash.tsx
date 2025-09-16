@@ -3,6 +3,8 @@
 import { useEffect, useState, ChangeEvent } from "react";
 import { LuSquarePen } from "react-icons/lu";
 import { MdDeleteOutline } from "react-icons/md";
+import Alert from "../Common/Alert";
+import ConfirmAlert from "../Common/ConfirmAlert";
 
 type VideoType = "YOUTUBE" | "LOCAL";
 
@@ -36,6 +38,15 @@ export default function Dashboard() {
   const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [galleryEditId, setGalleryEditId] = useState<number | null>(null);
   const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   // ===== Fetch Data =====
   const fetchVideos = async () => {
@@ -78,13 +89,17 @@ export default function Dashboard() {
       : "/api/documentasi/video";
     const method = videoEditId ? "PUT" : "POST";
 
-    await fetch(url, { method, body, headers });
-    setVideoName("");
-    setVideoUrl("");
-    setVideoFile(null);
-    setVideoEditId(null);
-    setIsVideoModalOpen(false);
-    fetchVideos();
+    const res = await fetch(url, { method, body, headers });
+    if (res.ok) {
+      // reset state hanya setelah sukses
+      setAlert({ type: "success", message: "Berhasil!" });
+      setVideoName("");
+      setVideoUrl("");
+      setVideoFile(null);
+      setVideoEditId(null);
+      setIsVideoModalOpen(false);
+      fetchVideos();
+    }
   };
 
   const handleVideoEdit = (v: Video) => {
@@ -95,9 +110,41 @@ export default function Dashboard() {
   };
 
   const handleVideoDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this video?")) return;
-    await fetch(`/api/documentasi/video/${id}`, { method: "DELETE" });
-    fetchVideos();
+    setAlert({
+      type: "warning",
+      message: `Apakah anda yakin ingin menghapus ?`,
+      show: true,
+      onConfirm: async () => {
+        setAlert(null);
+        try {
+          const res = await fetch(`/api/documentasi/video/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setAlert({
+              type: "error",
+              message: data.error || "Gagal hapus data",
+              show: true,
+            });
+            return;
+          }
+          fetchVideos();
+          setAlert({
+            type: "success",
+            message: "data berhasil dihapus!",
+            show: true,
+          });
+        } catch (err: any) {
+          setAlert({
+            type: "error",
+            message: err.message || "Terjadi kesalahan",
+            show: true,
+          });
+        }
+      },
+      onCancel: () => setAlert(null),
+    });
   };
 
   // ===== Handlers Gallery =====
@@ -106,7 +153,11 @@ export default function Dashboard() {
   };
 
   const handleGallerySubmit = async () => {
-    if (!galleryFile) return alert("Pilih gambar terlebih dahulu!");
+    if (!galleryFile)
+      return setAlert({
+        type: "warning",
+        message: "pilih poto terlebih dahulu!",
+      });
 
     const formData = new FormData();
     formData.append("name", galleryName);
@@ -117,24 +168,60 @@ export default function Dashboard() {
       : "/api/documentasi/gallery";
     const method = galleryEditId ? "PUT" : "POST";
 
-    await fetch(url, { method, body: formData });
-    setGalleryName("");
-    setGalleryFile(null);
-    setGalleryEditId(null);
-    setIsGalleryModalOpen(false);
-    fetchGalleries();
+    const res = await fetch(url, { method, body: formData });
+    if (res.ok) {
+      setAlert({ type: "success", message: "Berhasil!" });
+      setGalleryName("");
+      setGalleryFile(null);
+      setGalleryEditId(null);
+      setIsGalleryModalOpen(false);
+      fetchGalleries();
+    }
   };
 
   const handleGalleryEdit = (g: Gallery) => {
+    setAlert({ type: "success", message: "Berhasil!" });
     setGalleryEditId(g.id);
     setGalleryName(g.name);
     setIsGalleryModalOpen(true);
   };
 
   const handleGalleryDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this gallery?")) return;
-    await fetch(`/api/documentasi/gallery/${id}`, { method: "DELETE" });
-    fetchGalleries();
+    setAlert({
+      type: "warning",
+      message: `Apakah anda yakin ingin menghapus ?`,
+      show: true,
+      onConfirm: async () => {
+        setAlert(null);
+        try {
+          const res = await fetch(`/api/documentasi/gallery/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setAlert({
+              type: "error",
+              message: data.error || "Gagal hapus data",
+              show: true,
+            });
+            return;
+          }
+          fetchGalleries();
+          setAlert({
+            type: "success",
+            message: "data berhasil dihapus!",
+            show: true,
+          });
+        } catch (err: any) {
+          setAlert({
+            type: "error",
+            message: err.message || "Terjadi kesalahan",
+            show: true,
+          });
+        }
+      },
+      onCancel: () => setAlert(null),
+    });
   };
 
   // ===== Modal Component =====
@@ -151,6 +238,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-bold mb-4 text-gray-800">{title}</h2>
           {children}
           <button
+            type="button"
             onClick={onClose}
             className="mt-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
           >
@@ -163,11 +251,31 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 bg-white min-h-screen space-y-12">
+      {/* Alert atau Confirm */}
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
       {/* ===== Video Section ===== */}
       <section>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Video</h1>
           <button
+            type="button"
             onClick={() => setIsVideoModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
           >
@@ -204,12 +312,14 @@ export default function Dashboard() {
               </div>
               <div className="flex gap-2 mt-3 flex-wrap items-end w-full justify-end">
                 <button
+                  type="button"
                   onClick={() => handleVideoEdit(v)}
                   className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded transition"
                 >
                   <LuSquarePen size={18} />
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleVideoDelete(v.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
                 >
@@ -226,6 +336,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Gallery</h1>
           <button
+            type="button"
             onClick={() => setIsGalleryModalOpen(true)}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
           >
@@ -251,12 +362,14 @@ export default function Dashboard() {
               </div>
               <div className="flex gap-2 mt-3 flex-wrap items-end w-full justify-end">
                 <button
+                  type="button"
                   onClick={() => handleGalleryEdit(g)}
                   className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded transition"
                 >
                   <LuSquarePen size={18} />
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleGalleryDelete(g.id)}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
                 >
@@ -298,6 +411,7 @@ export default function Dashboard() {
             className="border text-gray-500 rounded-sm text-sm"
           />
           <button
+            type="button"
             onClick={handleVideoSubmit}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mt-2"
           >
@@ -327,6 +441,7 @@ export default function Dashboard() {
             className="border text-gray-500 rounded-sm text-sm"
           />
           <button
+            type="button"
             onClick={handleGallerySubmit}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mt-2"
           >

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BlogTextEditor from "@/components/Common/TextEditor";
+import ConfirmAlert from "@/components/Common/ConfirmAlert";
+import Alert from "@/components/Common/Alert";
 
 export default function AddNewsPage() {
   const [title, setTitle] = useState("");
@@ -11,10 +13,20 @@ export default function AddNewsPage() {
   const [editor, setEditor] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -25,7 +37,10 @@ export default function AddNewsPage() {
           setContent(data.content);
           setTag(data.tag);
           setEditor(data.editor);
+          setMounted(true);
         });
+    } else {
+      setMounted(true);
     }
   }, [id]);
 
@@ -59,15 +74,41 @@ export default function AddNewsPage() {
         return;
       }
 
-      alert(id ? "Berita berhasil diupdate" : "Berita berhasil ditambahkan");
+      setAlert({
+        type: "success",
+        message: id
+          ? "Berita berhasil diupdate"
+          : "Berita berhasil ditambahkan",
+      });
+
       router.push("/admin/dashboard/news");
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
     }
   };
 
+  if (!mounted) return null;
+
   return (
     <div className="min-h-screen p-6 bg-gray-50">
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-gray-900">
           {id ? "Edit Berita" : "Tambah Berita"}

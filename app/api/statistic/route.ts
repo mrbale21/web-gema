@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
 import {
   createStatistic,
   getAllStatistic,
 } from "@/lib/services/statisticServices";
+import { uploadToS3Buffer } from "@/lib/s3";
 
 export async function GET() {
   try {
@@ -22,11 +22,9 @@ export async function POST(req: NextRequest) {
     const contentType = req.headers.get("content-type") || "";
 
     if (contentType.includes("application/json")) {
-      // 📌 Kalau JSON
       data = await req.json();
       imageUrl = data.image; // ambil langsung dari JSON body
     } else if (contentType.includes("multipart/form-data")) {
-      // 📌 Kalau FormData
       const formData = await req.formData();
       data = {
         nameTenant: formData.get("nameTenant") as string,
@@ -36,11 +34,17 @@ export async function POST(req: NextRequest) {
 
       const imageFile = formData.get("image") as File | null;
       if (imageFile) {
-        const bytes = await imageFile.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const filePath = `public/uploads/${Date.now()}-${imageFile.name}`;
-        await fs.promises.writeFile(filePath, buffer);
-        imageUrl = "/uploads/" + filePath.split("/").pop();
+        // Convert stream ke buffer
+        const buffer = await streamToBuffer(imageFile.stream());
+
+        // Upload ke S3
+        const fileName = `${Date.now()}-${imageFile.name}`;
+        const s3Key = `statistic/${fileName}`;
+        imageUrl = await uploadToS3Buffer(
+          buffer,
+          s3Key,
+          imageFile.type || "application/octet-stream"
+        );
       }
     } else {
       return NextResponse.json(
@@ -50,9 +54,25 @@ export async function POST(req: NextRequest) {
     }
 
     const statistic = await createStatistic(data.name, data.count, imageUrl);
-
     return NextResponse.json(statistic);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+// helper untuk convert stream ke buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

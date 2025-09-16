@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
+import { uploadToS3Buffer } from "@/lib/s3";
 import { createPartner, getAllPartner } from "@/lib/services/partnerServices";
 
 export async function GET() {
@@ -32,11 +32,15 @@ export async function POST(req: NextRequest) {
 
       const imageFile = formData.get("image") as File | null;
       if (imageFile) {
-        const bytes = await imageFile.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const filePath = `public/uploads/${Date.now()}-${imageFile.name}`;
-        await fs.promises.writeFile(filePath, buffer);
-        imageUrl = "/uploads/" + filePath.split("/").pop();
+        const buffer = await streamToBuffer(imageFile.stream());
+        const fileName = `${Date.now()}-${imageFile.name}`;
+        const s3Key = `partner/${fileName}`;
+
+        imageUrl = await uploadToS3Buffer(
+          buffer,
+          s3Key,
+          imageFile.type || "application/octet-stream"
+        );
       }
     } else {
       return NextResponse.json(
@@ -51,4 +55,21 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+// helper convert stream ke buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

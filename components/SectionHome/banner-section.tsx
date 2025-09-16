@@ -7,25 +7,36 @@ import {
   MdOutlineArrowForwardIos,
 } from "react-icons/md";
 
-import slides from "@/data/banner";
 import ButtonPrimary from "../Common/ButtonPrimary";
+import { BannerType } from "@/types/banner";
 
 export default function BannerSection() {
+  const [allBanner, setAllBanner] = useState<BannerType[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  const fetchBanner = async () => {
+    const res = await fetch("/api/banner");
+    const data = await res.json();
+    setAllBanner(data);
+  };
+
+  useEffect(() => {
+    fetchBanner();
+  }, []);
+
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
+    setCurrentSlide((prev) => (prev + 1) % allBanner.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setCurrentSlide((prev) => (prev - 1 + allBanner.length) % allBanner.length);
   };
 
-  // Auto slide tiap 5 detik
   useEffect(() => {
+    if (allBanner.length === 0) return;
     const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [allBanner.length]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden mt-22 lg:mt-36">
@@ -34,7 +45,7 @@ export default function BannerSection() {
         className="flex h-full transition-transform duration-1000 ease-in-out"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
-        {slides.map(({ image, title, subtitle, description }, index) => (
+        {allBanner.map(({ image, title, subtitle, desc }, index) => (
           <div
             key={index}
             className="w-full flex-shrink-0 h-full relative bg-cover bg-center"
@@ -51,7 +62,7 @@ export default function BannerSection() {
               <h2 className="text-xl md:text-3xl font-bold text-amber-300 mb-4 lg:py-4">
                 {subtitle}
               </h2>
-              <p className="max-w-2xl text-lg md:text-xl mb-6">{description}</p>
+              <p className="max-w-2xl text-lg md:text-xl mb-6">{desc}</p>
 
               <div className="flex items-center gap-4">
                 <ButtonPrimary href="#" label="Gabung Mitra" />
@@ -84,7 +95,7 @@ export default function BannerSection() {
 
       {/* Indikator carousel */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        {slides.map((_, index) => (
+        {allBanner.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}

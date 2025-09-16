@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
+import Alert from "../Common/Alert";
+import ConfirmAlert from "../Common/ConfirmAlert";
 
 interface Statistic {
   id: number;
@@ -23,6 +25,15 @@ export default function StatisticDash() {
   const [name, setName] = useState("");
   const [count, setCount] = useState<number>(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   const fetchStatistic = async () => {
     const res = await fetch("/api/statistic");
@@ -66,7 +77,7 @@ export default function StatisticDash() {
       setAddModal(false);
       resetForm();
       fetchStatistic();
-      alert("Statistic berhasil ditambahkan");
+      setAlert({ type: "success", message: "Data berhasil ditambahkan!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -97,7 +108,7 @@ export default function StatisticDash() {
       setEditModal(false);
       resetForm();
       fetchStatistic();
-      alert("Statistic berhasil diupdate");
+      setAlert({ type: "success", message: "Data berhasil diperbarui!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -105,24 +116,41 @@ export default function StatisticDash() {
 
   // === DELETE ===
   const handleDelete = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus Statistic ini?")) return;
-
-    try {
-      const res = await fetch(`/api/statistic/${id}`, {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Gagal menghapus Statistic");
-        return;
-      }
-
-      fetchStatistic();
-      alert("Statistic berhasil dihapus");
-    } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan");
-    }
+    setAlert({
+      type: "warning",
+      message: `Apakah anda yakin ingin menghapus ?`,
+      show: true,
+      onConfirm: async () => {
+        setAlert(null);
+        try {
+          const res = await fetch(`/api/statistic/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setAlert({
+              type: "error",
+              message: data.error || "Gagal hapus data",
+              show: true,
+            });
+            return;
+          }
+          fetchStatistic();
+          setAlert({
+            type: "success",
+            message: "data berhasil dihapus!",
+            show: true,
+          });
+        } catch (err: any) {
+          setAlert({
+            type: "error",
+            message: err.message || "Terjadi kesalahan",
+            show: true,
+          });
+        }
+      },
+      onCancel: () => setAlert(null),
+    });
   };
 
   const resetForm = () => {
@@ -135,6 +163,24 @@ export default function StatisticDash() {
 
   return (
     <div className="min-h-screen text-gray-800">
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Daftar Statistic</h1>
         <button

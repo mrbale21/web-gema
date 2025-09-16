@@ -3,17 +3,27 @@
 
 import { motion } from "framer-motion";
 import { BookOpen, Lightbulb, Target, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
+import { TimelineType } from "@/types/timeline";
+import { ProgramType } from "@/types/program";
+import { PrincipleType } from "@/types/principle";
+import { VisiMisiType } from "@/types/visimisi";
+import { availableIcons } from "@/components/Common/AvailableIcons";
 
-interface timelineData {
-  title: string;
-  year: string;
-  desc: string;
-}
+const iconsMap: Record<string, JSX.Element> = {
+  users: <Users className="w-8 h-8 text-primary" />,
+  target: <Target className="w-8 h-8 text-primary" />,
+  "book-open": <BookOpen className="w-8 h-8 text-primary" />,
+  lightbulb: <Lightbulb className="w-8 h-8 text-primary" />,
+};
 
 export default function ProfilePage() {
-  const [timeline, setTimeline] = useState<timelineData[]>([]);
+  const [timeline, setTimeline] = useState<TimelineType[]>([]);
+  const [program, setProgram] = useState<ProgramType[]>([]);
+  const [nilai, setNilai] = useState<PrincipleType[]>([]);
+  const [data, setData] = useState<VisiMisiType | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,33 +36,43 @@ export default function ProfilePage() {
       })
       .catch((err) => console.error("Invalid API", err))
       .finally(() => setLoading(false));
+
+    fetch("/api/program")
+      .then((res) => res.json())
+      .then((json) => {
+        if (Array.isArray(json)) {
+          setProgram(json);
+        }
+      })
+      .catch((err) => console.error("Invalid API", err))
+      .finally(() => setLoading(false));
+
+    fetch("/api/principle")
+      .then((res) => res.json())
+      .then((json) => {
+        if (Array.isArray(json)) {
+          setNilai(json);
+        }
+      })
+      .catch((err) => console.error("Invalid API", err))
+      .finally(() => setLoading(false));
+
+    fetch("/api/visimisi")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.length > 0) {
+          setData(json[0]); // ambil 1 data pertama
+        }
+      })
+      .catch((err) => console.error("masalah pada api", err))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>loading.....</p>;
+  if (loading) return <p>loading...</p>;
   if (!timeline) return <p>data tidak valid</p>;
-
-  const values = [
-    {
-      icon: <Users className="w-8 h-8 text-primary" />,
-      title: "Kebersamaan",
-      desc: "Menjunjung tinggi persaudaraan, solidaritas, dan gotong royong.",
-    },
-    {
-      icon: <Target className="w-8 h-8 text-primary" />,
-      title: "Kemandirian",
-      desc: "Mendorong generasi muda untuk berdaya secara ekonomi dan sosial.",
-    },
-    {
-      icon: <BookOpen className="w-8 h-8 text-primary" />,
-      title: "Inklusif",
-      desc: "Membuka ruang kolaborasi untuk semua kalangan tanpa batasan.",
-    },
-    {
-      icon: <Lightbulb className="w-8 h-8 text-primary" />,
-      title: "Berorientasi Masa Depan",
-      desc: "Fokus pada kompetensi relevan untuk menghadapi tantangan global.",
-    },
-  ];
+  if (!data) return <p>data tidak valid</p>;
+  if (!program) return <p>tidak ada data program unggulan</p>;
+  if (!nilai) return <p>tidak ada data nilai dan prinsip</p>;
 
   return (
     <LayoutPage
@@ -111,55 +131,37 @@ export default function ProfilePage() {
           Program Unggulan
         </h3>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition">
-            <h4 className="font-semibold text-lg mb-2 text-gray-800">
-              Pelatihan
-            </h4>
-            <p className="text-gray-600">
-              Berbagai pelatihan keterampilan untuk meningkatkan daya saing
-              generasi muda.
-            </p>
-          </div>
-          <div className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition">
-            <h4 className="font-semibold text-lg mb-2 text-gray-800">UMKM</h4>
-            <p className="text-gray-600">
-              Dukungan pengembangan usaha kecil berbasis komunitas Nahdliyin.
-            </p>
-          </div>
-          <div className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition">
-            <h4 className="font-semibold text-lg mb-2 text-gray-800">Sosial</h4>
-            <p className="text-gray-600">
-              Program kepedulian masyarakat melalui aksi nyata dan kolaborasi.
-            </p>
-          </div>
-          <div className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition">
-            <h4 className="font-semibold text-lg mb-2 text-gray-800">
-              Digitalisasi
-            </h4>
-            <p className="text-gray-600">
-              Mendorong literasi digital dan inovasi berbasis teknologi.
-            </p>
-          </div>
+          {program.map((p) => (
+            <div
+              key={p.id}
+              className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition"
+            >
+              <h4 className="font-semibold text-lg mb-2 text-gray-800">
+                {p.title}
+              </h4>
+              <p className="text-gray-600">{p.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Visi & Misi */}
-      <section className="px-6 lg:px-20 mb-16 grid md:grid-cols-2 gap-10">
+      <section className="px-6 lg:px-20 mb-16 grid md:grid-cols-3 gap-6">
+        {/* Visi */}
         <motion.div
           initial={{ x: -50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition"
+          className="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition border-l-4 border-primary"
         >
           <h3 className="text-2xl font-bold text-primary mb-4">Visi</h3>
           <p className="text-gray-700 leading-relaxed">
-            Menjadi wadah utama pemberdayaan generasi muda Nahdliyin yang
-            berkarakter, berdaya saing, dan memberi kontribusi nyata bagi
-            masyarakat, bangsa, dan agama.
+            {data.visi.map((v) => v.title).join(". ")}
           </p>
         </motion.div>
 
+        {/* Misi */}
         <motion.div
           initial={{ x: 50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
@@ -168,13 +170,28 @@ export default function ProfilePage() {
           className="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition"
         >
           <h3 className="text-2xl font-bold text-primary mb-4">Misi</h3>
-          <ul className="list-disc list-inside text-gray-700 space-y-2">
-            <li>Mengembangkan pendidikan dan literasi digital.</li>
-            <li>Mendorong tumbuhnya UMKM berbasis komunitas.</li>
-            <li>Menyelenggarakan pelatihan keterampilan generasi muda.</li>
-            <li>Membangun jaringan kolaborasi antar komunitas.</li>
-            <li>Menanamkan nilai kebersamaan, toleransi, dan kemandirian.</li>
+          <ul className="space-y-3">
+            {data.misi.map((m) => (
+              <li key={m.id} className="flex items-start gap-2 text-gray-700">
+                <span className="flex-shrink-0 w-2 h-2 bg-primary rounded-full mt-2"></span>
+                <span>{m.title}</span>
+              </li>
+            ))}
           </ul>
+        </motion.div>
+
+        {/* Motto */}
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="bg-primary/10 shadow-lg rounded-2xl p-6 hover:shadow-xl transition flex flex-col justify-center items-center text-center"
+        >
+          <h3 className="text-2xl font-bold text-primary mb-4">Motto</h3>
+          <p className="text-gray-700 italic relative before:content-['“'] before:absolute before:-left-3 before:text-primary before:text-4xl after:content-['”'] after:absolute after:-right-3 after:text-primary after:text-4xl">
+            {data?.moto}
+          </p>
         </motion.div>
       </section>
 
@@ -184,7 +201,7 @@ export default function ProfilePage() {
           Nilai & Prinsip
         </h3>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {values.map((val, idx) => (
+          {nilai.map((val, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 40 }}
@@ -194,7 +211,7 @@ export default function ProfilePage() {
               className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl hover:scale-105 transition-transform"
             >
               <div className="flex justify-center items-center w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4">
-                {val.icon}
+                {availableIcons.find((i) => i.name === val.icon)?.icon}
               </div>
               <h4 className="font-semibold text-lg mb-2 text-gray-800">
                 {val.title}

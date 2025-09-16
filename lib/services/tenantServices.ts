@@ -4,6 +4,10 @@ export async function getTenant() {
   return prisma.tenant.findFirst();
 }
 
+export const createTenant = async (data: any) => {
+  return prisma.tenant.create({ data });
+};
+
 export async function updateTenant(
   id: number,
   data: {

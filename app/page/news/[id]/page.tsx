@@ -16,19 +16,12 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { FaPersonRifle } from "react-icons/fa6";
 import LayoutPage from "../../layout-page";
-
-interface Comment {
-  id: number;
-  name: string;
-  slug: string;
-  comment: string;
-  status: string;
-  createdAt: string;
-  tag: string;
-}
+import { TenantType } from "@/types/tenant";
+import { NewsType } from "@/types/news";
+import { CommentType } from "@/types/comments";
 
 const NewsDetailPage = () => {
-  const [comment, setComment] = useState<Comment[]>([]);
+  const [comment, setComment] = useState<CommentType[]>([]);
   const { id } = useParams<{ id: string }>();
   const [news, setNews] = useState<any>(null);
   const [error, setError] = useState("");
@@ -36,8 +29,8 @@ const NewsDetailPage = () => {
   const [content, setContent] = useState("");
   const [status, setStatus] = useState("");
   const [loadingComment, setLoadingComment] = useState(false);
-  const [allNews, setAllNews] = useState<any[]>([]);
-  const [allTenant, setAllTenant] = useState<any[]>([]);
+  const [allNews, setAllNews] = useState<NewsType[]>([]);
+  const [allTenant, setAllTenant] = useState<TenantType | null>(null);
 
   useEffect(() => {
     fetch("/api/news")
@@ -114,8 +107,6 @@ const NewsDetailPage = () => {
 
   const [likes, setLikes] = useState(47);
   const [isLiked, setIsLiked] = useState(false);
-
-  const tenantData = allTenant;
 
   const relatedNews = allNews
     .filter((item) => item.id !== Number(id))
@@ -305,7 +296,19 @@ const NewsDetailPage = () => {
                             </span>
                           )}
                           <span className="text-xs sm:text-sm text-gray-400">
-                            • {comment.createdAt}
+                            •{" "}
+                            {new Date(comment.createdAt).toLocaleString(
+                              "id-ID",
+                              {
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                                timeZone: "Asia/Jakarta",
+                              }
+                            )}
                           </span>
                         </div>
                         <p className="text-gray-700">{comment.comment}</p>
@@ -337,12 +340,21 @@ const NewsDetailPage = () => {
                       </div>
                       <div className="flex-1">
                         <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full mb-2">
-                          {news.category}
+                          {news.tag}
                         </span>
                         <h4 className="font-medium text-gray-900 group-hover:text-secondary transition-colors line-clamp-2 mb-2">
                           {news.title}
                         </h4>
-                        <p className="text-sm text-gray-500">{news.date}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(news.createdAt).toLocaleDateString(
+                            "id-ID",
+                            {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -357,31 +369,31 @@ const NewsDetailPage = () => {
             </div>
 
             {/* Quick Info */}
-            {tenantData.map((tenant) => (
+            {allTenant && (
               <div className="bg-primary rounded-xl p-6 text-white">
                 <h3 className="text-lg font-bold mb-4">Informasi Sekolah</h3>
                 <div className="space-y-3 text-sm">
                   <div>
                     <strong>Alamat:</strong>
                     <br />
-                    {tenant.address}
+                    {allTenant.address}
                   </div>
                   <div>
                     <strong>Telepon:</strong>
                     <br />
-                    {tenant.phone}
+                    {allTenant.phone}
                   </div>
                   <div>
                     <strong>Email:</strong>
                     <br />
-                    {tenant.email}
+                    {allTenant.email}
                   </div>
                 </div>
                 <button className="w-full mt-4 bg-white hover:bg-secondary hover:text-white text-primary py-2 rounded-lg font-medium transition-colors">
                   Hubungi Kami
                 </button>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

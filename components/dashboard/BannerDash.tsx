@@ -1,31 +1,34 @@
 "use client";
 
+import { BannerType } from "@/types/banner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BsPencilSquare } from "react-icons/bs";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
-
-interface Banner {
-  id: number;
-  title: string;
-  subtitle: string;
-  desc: string;
-  image?: string | null;
-  createdAt: string;
-}
+import Alert from "../Common/Alert";
+import ConfirmAlert from "../Common/ConfirmAlert";
 
 export default function BannerPage() {
-  const [banner, setbanner] = useState<Banner[]>([]);
+  const [banner, setbanner] = useState<BannerType[]>([]);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
   const [error, setError] = useState("");
-  const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
+  const [selectedBanner, setSelectedBanner] = useState<BannerType | null>(null);
 
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [desc, setDesc] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const [alert, setAlert] = useState<{
+    type: "success" | "error" | "warning" | "info";
+    message: string;
+    show?: boolean;
+    onClose?: () => void;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   const fetchBanner = async () => {
     const res = await fetch("/api/banner");
@@ -70,7 +73,7 @@ export default function BannerPage() {
       setAddModal(false);
       resetForm();
       fetchBanner();
-      alert("Banner berhasil ditambahkan");
+      setAlert({ type: "success", message: "Data berhasil ditambahkan!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -102,7 +105,7 @@ export default function BannerPage() {
       setEditModal(false);
       resetForm();
       fetchBanner();
-      alert("Banner berhasil diupdate");
+      setAlert({ type: "success", message: "Data berhasil diperbarui!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     }
@@ -110,24 +113,41 @@ export default function BannerPage() {
 
   // === DELETE ===
   const handleDelete = async (id: number) => {
-    if (!confirm("Yakin ingin menghapus Banner ini?")) return;
-
-    try {
-      const res = await fetch(`/api/banner/${id}`, {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Gagal menghapus Banner");
-        return;
-      }
-
-      fetchBanner();
-      alert("Banner berhasil dihapus");
-    } catch (err: any) {
-      alert(err.message || "Terjadi kesalahan");
-    }
+    setAlert({
+      type: "warning",
+      message: `Apakah anda yakin ingin menghapus ?`,
+      show: true,
+      onConfirm: async () => {
+        setAlert(null);
+        try {
+          const res = await fetch(`/api/banner/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setAlert({
+              type: "error",
+              message: data.error || "Gagal hapus data",
+              show: true,
+            });
+            return;
+          }
+          fetchBanner();
+          setAlert({
+            type: "success",
+            message: "data berhasil dihapus!",
+            show: true,
+          });
+        } catch (err: any) {
+          setAlert({
+            type: "error",
+            message: err.message || "Terjadi kesalahan",
+            show: true,
+          });
+        }
+      },
+      onCancel: () => setAlert(null),
+    });
   };
 
   const resetForm = () => {
@@ -141,6 +161,25 @@ export default function BannerPage() {
 
   return (
     <div className="min-h-screen text-gray-800">
+      {/* Alert atau Confirm */}
+      {alert && alert.onConfirm ? (
+        <ConfirmAlert
+          type={alert.type}
+          message={alert.message}
+          show={alert.show ?? true}
+          onConfirm={alert.onConfirm}
+          onCancel={alert.onCancel}
+        />
+      ) : (
+        alert && (
+          <Alert
+            type={alert.type}
+            message={alert.message}
+            duration={6000}
+            onClose={() => setAlert(null)}
+          />
+        )
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Daftar Banner</h1>
         <button
@@ -191,6 +230,7 @@ export default function BannerPage() {
                   onClick={() => {
                     setSelectedBanner(item);
                     setTitle(item.title);
+                    setSubtitle(item.subtitle);
                     setDesc(item.desc);
                     setEditModal(true);
                   }}

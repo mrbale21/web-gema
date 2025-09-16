@@ -1,22 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
 import { prisma } from "@/lib/prisma";
+import { uploadToS3Buffer } from "@/lib/s3";
 import {
   deleteProduct,
   getProductById,
   updateProduct,
 } from "@/lib/services/productServices";
 
+const MAX_SIZE = 6 * 1024 * 1024; // 6MB
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/jpg",
+  "image/gif",
+  "image/svg+xml",
+];
+
+// GET
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> } // params harus Promise
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await context.params;
     const productId = parseInt(id, 10);
 
     const product = await getProductById(productId);
-
     if (!product) {
       return NextResponse.json({ error: "product not found" }, { status: 404 });
     }
@@ -27,6 +37,7 @@ export async function GET(
   }
 }
 
+// PUT
 export async function PUT(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -53,11 +64,26 @@ export async function PUT(
 
       const imageFile = formData.get("image") as File | null;
       if (imageFile) {
-        const bytes = await imageFile.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const filePath = `public/uploads/${Date.now()}-${imageFile.name}`;
-        await fs.promises.writeFile(filePath, buffer);
-        imageUrl = "/uploads/" + filePath.split("/").pop();
+        // Validasi file
+        if (imageFile.size === 0) throw new Error("File kosong");
+        if (imageFile.size > MAX_SIZE)
+          throw new Error(`File maksimal ${MAX_SIZE / 1024 / 1024}MB`);
+        if (!ALLOWED_TYPES.includes(imageFile.type))
+          throw new Error(
+            `Tipe file harus salah satu dari: ${ALLOWED_TYPES.join(", ")}`
+          );
+
+        // Convert stream ke buffer
+        const buffer = await streamToBuffer(imageFile.stream());
+
+        // Upload ke S3
+        const fileName = Date.now() + "_" + imageFile.name;
+        const s3Key = `product/${fileName}`;
+        imageUrl = await uploadToS3Buffer(
+          buffer,
+          s3Key,
+          imageFile.type || "application/octet-stream"
+        );
       }
     } else {
       data = await req.json();
@@ -74,6 +100,7 @@ export async function PUT(
   }
 }
 
+// DELETE
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -85,9 +112,25 @@ export async function DELETE(
     }
 
     const deleted = await deleteProduct(id);
-
     return NextResponse.json({ message: "product berhasil dihapus", deleted });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+// Helper convert stream ke buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

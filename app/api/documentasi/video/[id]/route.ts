@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
 import {
   getVideoById,
   updateVideo,
   deleteVideo,
 } from "@/lib/services/documentService";
 import { VideoType } from "@prisma/client";
+import { uploadToS3Buffer } from "@/lib/s3";
 
 export async function GET(
   req: NextRequest,
@@ -40,11 +40,16 @@ export async function PUT(
 
       const videoFile = formData.get("video") as File | null;
       if (videoFile) {
-        const bytes = await videoFile.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        const filePath = `public/uploads/${Date.now()}-${videoFile.name}`;
-        await fs.promises.writeFile(filePath, buffer);
-        videoUrl = "/uploads/" + filePath.split("/").pop();
+        const buffer = await streamToBuffer(videoFile.stream());
+        const fileName = `${Date.now()}-${videoFile.name}`;
+        const s3Key = `videos/${fileName}`;
+
+        // Upload ke S3
+        videoUrl = await uploadToS3Buffer(
+          buffer,
+          s3Key,
+          videoFile.type || "application/octet-stream"
+        );
         type = VideoType.LOCAL;
       }
     } else {
@@ -79,4 +84,21 @@ export async function DELETE(
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+// helper konversi ReadableStream ke Buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
+import { uploadToS3Buffer } from "@/lib/s3";
 import { prisma } from "@/lib/prisma";
 import {
-  deleteBanner,
   getBannerById,
   updateBanner,
+  deleteBanner,
 } from "@/lib/services/bannerServices";
 
-// GET
+const MAX_SIZE = 6 * 1024 * 1024; // 6MB
+const ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/jpg",
+  "image/gif",
+  "image/svg+xml",
+];
+
+// GET Banner by ID
 export async function GET(
   req: Request,
   context: { params: Promise<{ id: string }> }
@@ -15,29 +25,33 @@ export async function GET(
   try {
     const { id } = await context.params;
     const bannerId = parseInt(id, 10);
-
     const banner = await getBannerById(bannerId);
 
     if (!banner) {
-      return NextResponse.json({ error: "banner not found" }, { status: 404 });
+      return NextResponse.json({ error: "Banner not found" }, { status: 404 });
     }
 
-    return NextResponse.json(banner);
+    return NextResponse.json({ ok: true, data: banner });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, message: err.message },
+      { status: 500 }
+    );
   }
 }
 
-// PUT
+// PUT Banner (Edit)
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-    }
+    if (isNaN(id))
+      return NextResponse.json(
+        { ok: false, message: "Invalid ID" },
+        { status: 400 }
+      );
 
     const formData = await req.formData();
     const title = formData.get("title") as string;
@@ -46,42 +60,86 @@ export async function PUT(
     const imageFile = formData.get("image") as File | null;
 
     let imageUrl: string | undefined;
+
     if (imageFile) {
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const filePath = `public/uploads/${Date.now()}-${imageFile.name}`;
-      await fs.promises.writeFile(filePath, buffer);
-      imageUrl = "/uploads/" + filePath.split("/").pop();
+      if (imageFile.size === 0) throw new Error("File kosong");
+      if (imageFile.size > MAX_SIZE)
+        throw new Error(`File maksimal ${MAX_SIZE / 1024 / 1024}MB`);
+      if (!ALLOWED_TYPES.includes(imageFile.type))
+        throw new Error(
+          `Tipe file harus salah satu dari: ${ALLOWED_TYPES.join(", ")}`
+        );
+
+      const buffer = await streamToBuffer(imageFile.stream());
+      const fileName = Date.now() + "_" + imageFile.name;
+      const s3Key = `banner/${fileName}`;
+      imageUrl = await uploadToS3Buffer(
+        buffer,
+        s3Key,
+        imageFile.type || "application/octet-stream"
+      );
     }
 
-    const updatedbanner = await updateBanner(
+    const updatedBanner = await updateBanner(
       id,
       title,
       desc,
       subtitle,
       imageUrl
     );
-    return NextResponse.json(updatedbanner);
+
+    return NextResponse.json({ ok: true, data: updatedBanner });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error(err);
+    return NextResponse.json(
+      { ok: false, message: err.message },
+      { status: 500 }
+    );
   }
 }
 
-// DELETE
+// DELETE Banner
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-    }
+    if (isNaN(id))
+      return NextResponse.json(
+        { ok: false, message: "Invalid ID" },
+        { status: 400 }
+      );
 
     const deleted = await deleteBanner(id);
 
-    return NextResponse.json({ message: "banner berhasil dihapus", deleted });
+    return NextResponse.json({
+      ok: true,
+      message: "Banner berhasil dihapus",
+      deleted,
+    });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error(err);
+    return NextResponse.json(
+      { ok: false, message: err.message },
+      { status: 500 }
+    );
   }
+}
+
+// Helper untuk convert stream ke buffer
+async function streamToBuffer(
+  stream: ReadableStream<Uint8Array> | null | undefined
+) {
+  if (!stream) return Buffer.alloc(0);
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+
+  return Buffer.concat(chunks);
 }

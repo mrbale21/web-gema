@@ -1,10 +1,33 @@
+"use client";
+
 import Image from "next/image";
 import partnerData from "@/data/partrnerData";
 import Marquee from "react-fast-marquee";
+import { useEffect, useState } from "react";
+import { PartnerType } from "@/types/partner";
 
 export default function PartnerSection() {
-  // Duplikasikan partnerData biar transisi lebih mulus
-  const data = [...partnerData, ...partnerData];
+  const [partner, setPartner] = useState<PartnerType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/partner`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (Array.isArray(json)) {
+          setPartner(json);
+        } else {
+          setPartner([json]);
+        }
+      })
+      .catch((err) => console.error("Error:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (!partner) return <p>Tidak ada data Partner..</p>;
+
+  const data = [...partner, ...partner];
 
   return (
     <div className=" w-full">
@@ -17,7 +40,7 @@ export default function PartnerSection() {
                 className="relative w-[80px] h-[80px] flex-shrink-0"
               >
                 <Image
-                  src={item.image}
+                  src={item.image ?? "/assets/images/placeholder.png"}
                   alt={`Partner ${idx + 1}`}
                   fill
                   className="object-contain"
