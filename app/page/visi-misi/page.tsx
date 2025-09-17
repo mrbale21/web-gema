@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FaBullseye, FaLightbulb, FaQuoteLeft } from "react-icons/fa";
 import LayoutPage from "../layout-page";
+import Loading from "@/components/Common/Loading";
 
 interface VisiMisi {
   id: number;
@@ -41,8 +42,9 @@ export default function VisiMisi() {
       .catch((err) => console.error("masalah pada api", err))
       .finally(() => setLoading(false));
   }, []);
-  if (loading) return <p>loading.....</p>;
-  if (!data) return <p>data tidak valid</p>;
+  if (loading) return <Loading fullScreen type="spinner" />;
+  if (!data)
+    return <Loading fullScreen type="spinner" text="data tidak vallid!" />;
 
   return (
     <>

@@ -3,6 +3,7 @@
 import { Award, Quote } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import Loading from "../Common/Loading";
 
 interface ChairmanData {
   id: number;
@@ -38,8 +39,8 @@ export default function Chairman() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (!chairman) return <p>Tidak ada data Ketua</p>;
+  if (loading) return <Loading type="spinner" text="Memuat Ketua..." />;
+  if (!chairman) return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br bg-white">

@@ -1,58 +1,37 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  GraduationCap,
-  Users,
-  Award,
-  Rocket,
-  Briefcase,
-  Laptop,
-  Heart,
-} from "lucide-react";
+import { JSX, useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
+import DynamicIcon from "@/components/Common/DynamicIcon";
+import { Training, TrainingBenefit, TrainingDetail } from "@/types/training";
 
 export default function GemaPelatihan() {
-  const steps = [
-    {
-      icon: <GraduationCap className="w-10 h-10 text-white" />,
-      title: "Materi Berkualitas",
-      desc: "Pelatihan disusun oleh para pakar berpengalaman di bidangnya.",
-    },
-    {
-      icon: <Users className="w-10 h-10 text-white" />,
-      title: "Kelas Interaktif",
-      desc: "Peserta bisa berdiskusi dan praktek langsung bersama mentor.",
-    },
-    {
-      icon: <Award className="w-10 h-10 text-white" />,
-      title: "Sertifikat Resmi",
-      desc: "Setiap peserta akan mendapatkan sertifikat sebagai bukti kompetensi.",
-    },
-    {
-      icon: <Rocket className="w-10 h-10 text-white" />,
-      title: "Peluang Karir",
-      desc: "Membuka akses peluang kerja dan pengembangan usaha.",
-    },
-  ];
+  const [training, setTraining] = useState<Training[]>([]);
+  const [trainingdetail, setTrainingDetail] = useState<TrainingDetail[]>([]);
+  const [trainingbenefit, setTrainingbenefit] = useState<TrainingBenefit[]>([]);
 
-  const programs = [
-    {
-      icon: <Laptop className="w-8 h-8 text-primary" />,
-      title: "Digital & Teknologi",
-      desc: "Pelatihan seputar literasi digital, desain grafis, coding, hingga pemasaran online.",
-    },
-    {
-      icon: <Briefcase className="w-8 h-8 text-primary" />,
-      title: "Bisnis & UMKM",
-      desc: "Fokus pada pengembangan kewirausahaan, pengelolaan usaha, dan strategi pemasaran.",
-    },
-    {
-      icon: <Heart className="w-8 h-8 text-primary" />,
-      title: "Sosial & Keterampilan",
-      desc: "Pelatihan soft skill, kepemimpinan, manajemen organisasi, hingga keterampilan praktis.",
-    },
-  ];
+  useEffect(() => {
+    fetch("/api/training/benefit")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setTrainingbenefit(data);
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/training/")
+      .then((res) => res.json())
+      .then((data) => setTraining(data));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/training/detail")
+      .then((res) => res.json())
+      .then((data) => setTrainingDetail(data));
+  }, []);
 
   const benefits = [
     "Akses jaringan mitra luas di berbagai sektor.",
@@ -82,7 +61,7 @@ export default function GemaPelatihan() {
 
       {/* Steps Section */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 px-6 md:px-10">
-        {steps.map((step, idx) => (
+        {training.map((step, idx) => (
           <motion.div
             key={idx}
             initial={{ opacity: 0, y: 40 }}
@@ -92,7 +71,10 @@ export default function GemaPelatihan() {
             className="flex flex-col items-center bg-white shadow-md rounded-2xl p-6 text-center group hover:shadow-xl hover:scale-105 transition-transform"
           >
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary shadow-lg mb-4">
-              {step.icon}
+              <DynamicIcon
+                name={step.icon}
+                className=" mx-auto text-white w-8 h-8"
+              />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-primary">
               {step.title}
@@ -108,7 +90,7 @@ export default function GemaPelatihan() {
           Jenis Pelatihan yang Tersedia
         </h3>
         <div className="grid md:grid-cols-3 gap-8">
-          {programs.map((prog, idx) => (
+          {trainingdetail.map((prog, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 30 }}
@@ -117,7 +99,13 @@ export default function GemaPelatihan() {
               viewport={{ once: true }}
               className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition"
             >
-              <div className="mb-4">{prog.icon}</div>
+              <div className="mb-4">
+                {" "}
+                <DynamicIcon
+                  name={prog.icon}
+                  className="w-8 h-8 text-primary"
+                />
+              </div>
               <h4 className="text-lg font-semibold text-gray-800 mb-2">
                 {prog.title}
               </h4>
@@ -133,7 +121,7 @@ export default function GemaPelatihan() {
           Keunggulan Bergabung Sebagai Mitra
         </h3>
         <ul className="text-gray-600 space-y-3 text-center items-center justify-center flex flex-col max-w-xl mx-auto">
-          {benefits.map((item, idx) => (
+          {trainingbenefit.map((item, idx) => (
             <motion.li
               key={idx}
               initial={{ opacity: 0, x: -20 }}
@@ -143,7 +131,7 @@ export default function GemaPelatihan() {
               className="flex items-start gap-2"
             >
               <span className="text-primary font-bold">✔</span>
-              <span>{item}</span>
+              <span>{item.title}</span>
             </motion.li>
           ))}
         </ul>

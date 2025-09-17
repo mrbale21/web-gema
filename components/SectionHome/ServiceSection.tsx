@@ -12,6 +12,7 @@ import TextHeader from "../Common/TextHeader";
 import { SuperiorType } from "@/types/superior";
 import { availableIcons } from "../Common/AvailableIcons";
 import DynamicIcon from "../Common/DynamicIcon";
+import Loading from "../Common/Loading";
 
 export default function ServiceSection() {
   const [superior, setSuperior] = useState<SuperiorType[]>([]);
@@ -31,8 +32,8 @@ export default function ServiceSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (!superior) return <p>Tidak ada data Ketua</p>;
+  if (loading) return <Loading type="spinner" text="Memuat Servis..." />;
+  if (!superior) return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
   return (
     <section className="bg-accent/40 py-20">

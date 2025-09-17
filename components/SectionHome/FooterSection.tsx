@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Loading from "../Common/Loading";
 
 export default function FooterSection() {
   const [tenant, setTenant] = useState<TenantType | null>(null);
@@ -34,8 +35,8 @@ export default function FooterSection() {
     fetchTenant();
   }, []);
 
-  if (loading) return <p>Loading.....</p>;
-  if (!tenant) return <p>Data tidak ditemukan</p>;
+  if (loading) return <Loading type="spinner" text="Memuat footer..." />;
+  if (!tenant) return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
   return (
     <footer className="bg-primary text-white">

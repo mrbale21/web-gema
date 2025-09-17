@@ -10,13 +10,7 @@ import { ProgramType } from "@/types/program";
 import { PrincipleType } from "@/types/principle";
 import { VisiMisiType } from "@/types/visimisi";
 import { availableIcons } from "@/components/Common/AvailableIcons";
-
-const iconsMap: Record<string, JSX.Element> = {
-  users: <Users className="w-8 h-8 text-primary" />,
-  target: <Target className="w-8 h-8 text-primary" />,
-  "book-open": <BookOpen className="w-8 h-8 text-primary" />,
-  lightbulb: <Lightbulb className="w-8 h-8 text-primary" />,
-};
+import Loading from "@/components/Common/Loading";
 
 export default function ProfilePage() {
   const [timeline, setTimeline] = useState<TimelineType[]>([]);
@@ -68,7 +62,7 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>loading...</p>;
+  if (loading) return <Loading fullScreen type="spinner" />;
   if (!timeline) return <p>data tidak valid</p>;
   if (!data) return <p>data tidak valid</p>;
   if (!program) return <p>tidak ada data program unggulan</p>;

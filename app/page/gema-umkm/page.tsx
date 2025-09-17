@@ -1,86 +1,86 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
-import { FaChartLine, FaHandshake, FaStore, FaUsers } from "react-icons/fa";
+import DynamicIcon from "@/components/Common/DynamicIcon";
+import { GemaImgUMKM, GemaUMKM, GemaUMKMDetail } from "@/types/gemaumkm";
 
-const umkmProducts = [
-  {
-    id: 1,
-    name: "Kopi Nusantara",
-    desc: "Kopi pilihan petani NU yang dikemas modern untuk generasi masa kini.",
-    img: "/assets/images/kopi.jpg",
-  },
-  {
-    id: 2,
-    name: "Batik Nahdliyin",
-    desc: "Batik khas dengan motif Islami yang mengangkat kearifan lokal.",
-    img: "/assets/images/batik.jpg",
-  },
-  {
-    id: 3,
-    name: "Makanan Tradisional",
-    desc: "Camilan khas pesantren yang diproduksi UMKM binaan.",
-    img: "/assets/images/makanan.jpg",
-  },
-  {
-    id: 4,
-    name: "Produk Herbal",
-    desc: "Herbal alami untuk kesehatan, diracik dengan standar halal.",
-    img: "/assets/images/herbal.jpg",
-  },
-];
-
-const keunggulan = [
-  {
-    icon: <FaHandshake className="text-green-600 text-4xl" />,
-    title: "Jaringan Luas",
-    desc: "Terhubung dengan komunitas UMKM dan mitra strategis di seluruh Indonesia.",
-  },
-  {
-    icon: <FaChartLine className="text-blue-600 text-4xl" />,
-    title: "Pengembangan Bisnis",
-    desc: "Dukungan pelatihan, mentoring, dan akses permodalan untuk peningkatan usaha.",
-  },
-  {
-    icon: <FaUsers className="text-purple-600 text-4xl" />,
-    title: "Kolaborasi",
-    desc: "Kesempatan kolaborasi antar UMKM untuk memperluas pasar dan inovasi produk.",
-  },
-  {
-    icon: <FaStore className="text-orange-600 text-4xl" />,
-    title: "Promosi & Pemasaran",
-    desc: "Produk UMKM dipromosikan melalui kanal resmi Gema Nahdliyin.",
-  },
-];
+// interface sesuai model Prisma
 
 export default function GemaUMKMPage() {
+  const [umkm, setUmkm] = useState<GemaUMKM[]>([]);
+  const [umkmImgs, setUmkmImgs] = useState<GemaImgUMKM[]>([]);
+  const [umkmDetails, setUmkmDetails] = useState<GemaUMKMDetail[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [umkmRes, imgRes, detailRes] = await Promise.all([
+          fetch("/api/gemaumkm"),
+          fetch("/api/gemaumkm/image"),
+          fetch("/api/gemaumkm/detail"),
+        ]);
+
+        if (!umkmRes.ok || !imgRes.ok || !detailRes.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const [umkmData, imgData, detailData] = await Promise.all([
+          umkmRes.json(),
+          imgRes.json(),
+          detailRes.json(),
+        ]);
+
+        setUmkm(umkmData);
+        setUmkmImgs(imgData);
+        setUmkmDetails(detailData);
+      } catch (error) {
+        console.error("Error fetching UMKM data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <LayoutPage title="Loading..." titlePage="Loading" desc="Loading data">
+        <div className="text-center py-20">Loading data UMKM...</div>
+      </LayoutPage>
+    );
+  }
+
   return (
     <LayoutPage
       title="Gema UMKM"
       titlePage="UMKM Nahdliyin"
       desc="Mendorong pertumbuhan ekonomi masyarakat Nahdliyin melalui produk UMKM unggulan yang inovatif, berkualitas, dan berdaya saing."
     >
-      {/* Section Penjelasan */}
+      {/* Section Penjelasan (pakai umkmData) */}
       <section className="text-center max-w-4xl mx-auto mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-green-800 mb-4 mt-20">
-          Apa itu Gema UMKM?
+          {umkm[0]?.title || "Apa itu Gema UMKM?"}
         </h2>
         <p className="text-gray-600 text-lg leading-relaxed">
-          <span className="font-semibold">Gema UMKM</span> hadir sebagai wadah
-          untuk mendorong kemandirian ekonomi masyarakat Nahdliyin melalui
-          pengembangan produk-produk unggulan berbasis lokal. Program ini
-          berfokus pada pemberdayaan pelaku usaha kecil dan menengah,
-          peningkatan kualitas produksi, hingga perluasan akses pasar, baik di
-          tingkat nasional maupun global.
+          {umkm[0]?.desc || (
+            <>
+              <span className="font-semibold">Gema UMKM</span> hadir sebagai
+              wadah untuk mendorong kemandirian ekonomi masyarakat Nahdliyin
+              melalui pengembangan produk-produk unggulan berbasis lokal.
+            </>
+          )}
         </p>
       </section>
 
-      {/* Grid Produk */}
+      {/* Grid Produk (dari umkmImgs) */}
       <div className="py-10 px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10 px-15">
-          {umkmProducts.map((item) => (
+          {umkmImgs.map((item) => (
             <motion.div
               key={item.id}
               className="relative group rounded-2xl overflow-hidden shadow-lg bg-white"
@@ -89,7 +89,7 @@ export default function GemaUMKMPage() {
             >
               <div className="relative h-64 w-full">
                 <Image
-                  src={item.img}
+                  src={item.image || "/assets/images/default.jpg"}
                   alt={item.name}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -106,6 +106,7 @@ export default function GemaUMKMPage() {
         </div>
       </div>
 
+      {/* Section Keunggulan (dari umkmDetails) */}
       <section className="relative bg-gradient-to-r from-green-100 via-white to-green-50 py-16 rounded-2xl shadow-lg">
         <div className="text-center max-w-3xl mx-auto mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
@@ -120,14 +121,17 @@ export default function GemaUMKMPage() {
 
         {/* Grid Keunggulan */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 px-6 md:px-16">
-          {keunggulan.map((item, index) => (
+          {umkmDetails.map((item, index) => (
             <motion.div
               key={index}
               whileHover={{ y: -10, scale: 1.05 }}
               transition={{ type: "spring", stiffness: 200 }}
               className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl flex flex-col items-center text-center"
             >
-              {item.icon}
+              <DynamicIcon
+                name={item.icon}
+                className="w-10 h-10 text-primary"
+              />
               <h3 className="mt-4 text-xl font-semibold text-gray-800">
                 {item.title}
               </h3>

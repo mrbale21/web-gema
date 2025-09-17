@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import TextHeader from "../Common/TextHeader";
+import Loading from "../Common/Loading";
 
 interface dataTenant {
   desc: string;
@@ -27,8 +28,8 @@ export default function AboutSection() {
     fetchTenant();
   }, []);
 
-  if (loading) return <p>Loading.....</p>;
-  if (!tenant) return <p>Data tidak ditemukan</p>;
+  if (loading) return <Loading type="spinner" text="Memuat Tentang Kami..." />;
+  if (!tenant) return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
   return (
     <>

@@ -5,6 +5,7 @@ import partnerData from "@/data/partrnerData";
 import Marquee from "react-fast-marquee";
 import { useEffect, useState } from "react";
 import { PartnerType } from "@/types/partner";
+import Loading from "../Common/Loading";
 
 export default function PartnerSection() {
   const [partner, setPartner] = useState<PartnerType[]>([]);
@@ -24,8 +25,8 @@ export default function PartnerSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (!partner) return <p>Tidak ada data Partner..</p>;
+  if (loading) return <Loading type="spinner" text="Memuat partner..." />;
+  if (!partner) return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
   const data = [...partner, ...partner];
 

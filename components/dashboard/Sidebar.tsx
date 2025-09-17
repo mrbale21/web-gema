@@ -20,6 +20,10 @@ import {
   Target,
   HeartHandshake,
   Info,
+  Layers3,
+  GraduationCap,
+  Store,
+  ClipboardList,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -32,7 +36,7 @@ const navItems = [
     label: "Header",
     icon: LayoutPanelLeft,
     children: [
-      { id: "/admin/dashboard/menu", label: "Navbar", icon: LayoutPanelLeft },
+      { id: "/admin/dashboard/navbar", label: "Navbar", icon: LayoutPanelLeft },
       { id: "/admin/dashboard/banner", label: "Banner", icon: Image },
     ],
   },
@@ -41,7 +45,6 @@ const navItems = [
     label: "Beranda",
     icon: Home,
     children: [
-      { id: "/admin/dashboard/news", label: "News", icon: Newspaper },
       { id: "/admin/dashboard/product", label: "Produk", icon: Package },
       {
         id: "/admin/dashboard/chairman",
@@ -51,16 +54,11 @@ const navItems = [
       { id: "/admin/dashboard/statistic", label: "Statistik", icon: BarChart3 },
       { id: "/admin/dashboard/partner", label: "Partner", icon: Handshake },
       { id: "/admin/dashboard/superior", label: "Keunggulan", icon: Star },
-      {
-        id: "/admin/dashboard/documentasi",
-        label: "Dokumentasi",
-        icon: Camera,
-      },
     ],
   },
   {
     id: "profile",
-    label: "Profile",
+    label: "Profil",
     icon: UserCircle,
     children: [
       { id: "/admin/dashboard/timeline", label: "Sejarah", icon: BookOpen },
@@ -73,9 +71,42 @@ const navItems = [
       },
     ],
   },
-  { id: "/admin/dashboard/users", label: "Users", icon: Users },
+  {
+    id: "product",
+    label: "Produk",
+    icon: Store,
+    children: [
+      {
+        id: "/admin/dashboard/gemakop",
+        label: "GemaKOP",
+        icon: Layers3,
+      },
+      {
+        id: "/admin/dashboard/gemaedtech",
+        label: "GemaEdTech",
+        icon: GraduationCap,
+      },
+      {
+        id: "/admin/dashboard/gemaumkm",
+        label: "GemaUMKM",
+        icon: Store,
+      },
+      {
+        id: "/admin/dashboard/training",
+        label: "Pelatihan",
+        icon: ClipboardList,
+      },
+    ],
+  },
+  { id: "/admin/dashboard/news", label: "Blog", icon: Newspaper },
+  {
+    id: "/admin/dashboard/documentasi",
+    label: "Dokumentasi",
+    icon: Camera,
+  },
+  { id: "/admin/dashboard/users", label: "Pengguna", icon: Users },
   { id: "/admin/dashboard/tenant", label: "Informasi", icon: Info },
-  { id: "/admin/dashboard/settings", label: "Settings", icon: Settings },
+  // { id: "/admin/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar({

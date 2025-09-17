@@ -1,43 +1,40 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  FaChalkboardTeacher,
-  FaLaptopCode,
-  FaUsers,
-  FaCertificate,
-} from "react-icons/fa";
+import { JSX, useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
+import DynamicIcon from "@/components/Common/DynamicIcon";
+import { GemaEdTech, GemaEdTechDetail } from "@/types/gemaedtech";
 
 export default function GemaEdTechPage() {
-  const features = [
-    {
-      icon: <FaChalkboardTeacher size={40} className="text-green-600" />,
-      title: "Pembelajaran Interaktif",
-      desc: "Kelas dengan metode modern yang membuat belajar lebih efektif dan menyenangkan.",
-    },
-    {
-      icon: <FaLaptopCode size={40} className="text-green-600" />,
-      title: "Platform Digital",
-      desc: "Akses pembelajaran dari mana saja melalui platform digital yang user-friendly.",
-    },
-    {
-      icon: <FaUsers size={40} className="text-green-600" />,
-      title: "Komunitas Belajar",
-      desc: "Bergabung dengan komunitas pembelajar untuk berkolaborasi dan bertukar ilmu.",
-    },
-    {
-      icon: <FaCertificate size={40} className="text-green-600" />,
-      title: "Sertifikasi",
-      desc: "Dapatkan sertifikat resmi yang diakui untuk mendukung karir dan kompetensi Anda.",
-    },
-  ];
+  const [gemaedtech, setGemaedtech] = useState<GemaEdTech | null>(null);
+  const [gemaedtechdetail, setGemaedtechdetail] = useState<GemaEdTechDetail[]>(
+    []
+  );
+
+  // ambil hanya 1 item
+  useEffect(() => {
+    fetch("/api/gemaedtech")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.length > 0) {
+          setGemaedtech(data[0]); // ambil item pertama saja
+        }
+      });
+  }, []);
+
+  // ambil semua item
+  useEffect(() => {
+    fetch("/api/gemaedtech/detail")
+      .then((res) => res.json())
+      .then((data) => setGemaedtechdetail(data));
+  }, []);
 
   return (
     <LayoutPage
       title="Gema EdTech"
       titlePage="Gema EdTech"
-      desc="Inovasi pendidikan digital dari Gema Nahdliyin, menghadirkan solusi pembelajaran modern, mudah diakses, dan berkualitas."
+      desc={gemaedtech ? gemaedtech.desc : "Loading..."}
     >
       <div className="relative bg-gradient-to-br from-green-50 via-white to-green-100 py-16 overflow-hidden">
         <div className="max-w-6xl mx-auto text-center px-6">
@@ -47,7 +44,7 @@ export default function GemaEdTechPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            Belajar Lebih Mudah & Modern
+            {gemaedtech ? gemaedtech.title : "Loading..."}
           </motion.h2>
           <motion.p
             className="text-gray-600 max-w-2xl mx-auto"
@@ -55,23 +52,24 @@ export default function GemaEdTechPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
           >
-            Gema EdTech mendukung perkembangan pendidikan berbasis teknologi
-            dengan menyediakan platform digital inovatif yang membantu siswa,
-            guru, dan masyarakat dalam mengakses ilmu dengan lebih luas.
+            {gemaedtech ? gemaedtech.desc : ""}
           </motion.p>
         </div>
 
-        {/* Features Section */}
+        {/* Features Section dari DB */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 px-20 py-10">
-          {features.map((item, i) => (
+          {gemaedtechdetail.map((item) => (
             <motion.div
-              key={i}
+              key={item.id}
               whileHover={{ y: -8, scale: 1.02 }}
               transition={{ type: "spring", stiffness: 200 }}
               className="group flex items-center gap-4 rounded-2xl bg-white/90 shadow-md p-6 hover:shadow-xl border border-gray-100"
             >
               <div className="flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                {item.icon}
+                <DynamicIcon
+                  name={item.icon}
+                  className="w-10 h-10 text-primary"
+                />
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-1">{item.title}</h3>

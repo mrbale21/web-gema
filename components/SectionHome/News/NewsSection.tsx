@@ -9,6 +9,7 @@ import {
 import { ArrowRight } from "lucide-react";
 import TextHeader from "@/components/Common/TextHeader";
 import ButtonReadMore from "@/components/Common/ButtonReadMore";
+import Loading from "@/components/Common/Loading";
 
 interface News {
   id: number;
@@ -27,15 +28,30 @@ export default function NewsSection({ limit }: { limit?: number }) {
   const [news, setNews] = useState<News[]>([]);
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchNews = async () => {
-      const res = await fetch("/api/news");
-      const data = await res.json();
-      setNews(data);
+      try {
+        const res = await fetch("/api/news");
+        const data = await res.json();
+        setNews(data);
+      } catch (err) {
+        console.error("Gagal fetch news:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchNews();
   }, []);
+
+  if (loading) {
+    return (
+      <section className="py-8 flex justify-center">
+        <Loading type="spinner" text="Memuat berita..." />
+      </section>
+    );
+  }
 
   const totalPages = Math.ceil(news.length / ITEMS_PER_PAGE);
 

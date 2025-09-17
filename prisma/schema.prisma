@@ -252,12 +252,11 @@ model GemaUMKM {
   desc           String
 }
 
-model GemaUMKMImg {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
-  image          String?
+model GemaImgUMKM {
+  id           Int     @id @default(autoincrement())
+  name         String
+  desc         String
+  image        String?
 }
 
 model GemaUMKMDetail {

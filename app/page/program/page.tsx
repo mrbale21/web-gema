@@ -1,36 +1,31 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { BookOpen, Lightbulb, Target, Users } from "lucide-react";
+import { JSX, useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
-import { BookOpen, Users, Rocket, Lightbulb } from "lucide-react";
+import Loading from "@/components/Common/Loading";
+import { ProgramType } from "@/types/program";
+import DynamicIcon from "@/components/Common/DynamicIcon";
 
 export default function ProgramPage() {
-  const programs = [
-    {
-      icon: <BookOpen className="w-10 h-10 text-white" />,
-      title: "Pendidikan & Literasi",
-      desc: "Menyelenggarakan program belajar, literasi digital, dan workshop untuk generasi muda.",
-      color: "from-indigo-500 to-purple-500",
-    },
-    {
-      icon: <Users className="w-10 h-10 text-white" />,
-      title: "Pemberdayaan Komunitas",
-      desc: "Membina UMKM, kegiatan sosial, dan kolaborasi antar komunitas Nahdliyin.",
-      color: "from-green-500 to-teal-500",
-    },
-    {
-      icon: <Rocket className="w-10 h-10 text-white" />,
-      title: "Pelatihan & Skill",
-      desc: "Memberikan pelatihan praktis, sertifikasi, dan peningkatan kompetensi peserta.",
-      color: "from-yellow-400 to-orange-500",
-    },
-    {
-      icon: <Lightbulb className="w-10 h-10 text-white" />,
-      title: "Inovasi & Kreativitas",
-      desc: "Mendorong ide kreatif, inovasi teknologi, dan solusi problem-solving di masyarakat.",
-      color: "from-pink-500 to-red-500",
-    },
-  ];
+  const [programs, setProgram] = useState<ProgramType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/program")
+      .then((res) => res.json())
+      .then((json) => {
+        if (Array.isArray(json)) {
+          setProgram(json);
+        }
+      })
+      .catch((err) => console.error("Invalid API", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <Loading fullScreen type="spinner" />;
+  if (!programs) return <Loading fullScreen type="spinner" />;
 
   return (
     <LayoutPage
@@ -62,9 +57,12 @@ export default function ProgramPage() {
             className="flex flex-col items-center text-center p-6 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-transform bg-white"
           >
             <div
-              className={`flex justify-center items-center w-16 h-16 rounded-full mb-4 bg-gradient-to-r ${program.color} shadow-lg`}
+              className={`flex justify-center items-center w-16 h-16 rounded-full mb-4 bg-gradient-to-r from-green-400 to-teal-500 shadow-lg`}
             >
-              {program.icon}
+              <DynamicIcon
+                name={program.icon}
+                className="w-8 h-8 text-white "
+              />
             </div>
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
               {program.title}

@@ -4,6 +4,7 @@ import product from "@/data/product";
 import TextHeader from "../Common/TextHeader";
 import { useEffect, useState } from "react";
 import { ProductType } from "@/types/product";
+import Loading from "../Common/Loading";
 
 export default function ProductSection() {
   const [product, setProduct] = useState<ProductType[]>([]);
@@ -23,8 +24,8 @@ export default function ProductSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (!product) return <p>Tidak ada data Product..</p>;
+  if (loading) return <Loading type="spinner" text="Memuat Produk..." />;
+  if (!product) return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
   return (
     <div className="bg-white px-6 md:px-10 pb-16">

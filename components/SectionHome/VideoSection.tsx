@@ -14,16 +14,26 @@ export default function VideoSection() {
   const [isOpen, setIsOpen] = useState(false);
   const [video, setVideo] = useState<Video | null>(null);
   const [videoSrc, setVideoSrc] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // Fetch 1 video by ID
   useEffect(() => {
-    fetch("/api/documentasi/video/3")
+    fetch("/api/documentasi/video")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch video");
         return res.json();
       })
-      .then((data: Video) => setVideo(data))
-      .catch((err) => console.error("Error fetch video:", err));
+      .then((data: Video[]) => {
+        if (data.length > 0) {
+          // Ambil video pertama
+          setVideo(data[0]);
+
+          // atau random
+          // const random = data[Math.floor(Math.random() * data.length)];
+          // setVideo(random);
+        }
+      })
+      .catch((err) => console.error("Error fetch video:", err))
+      .finally(() => setLoading(false));
   }, []);
 
   const openVideo = (src: string) => {

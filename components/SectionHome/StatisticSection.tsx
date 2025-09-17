@@ -4,6 +4,7 @@ import Image from "next/image";
 import statisticData from "@/data/statData";
 import { StatisticType } from "@/types/statistic";
 import { useEffect, useState } from "react";
+import Loading from "../Common/Loading";
 
 export default function StatisticSection() {
   const [statistic, setStatistic] = useState<StatisticType[]>([]);
@@ -23,8 +24,9 @@ export default function StatisticSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (!statistic) return <p>Tidak ada data Statistic..</p>;
+  if (loading) return <Loading type="spinner" text="Memuat statistik..." />;
+  if (!statistic)
+    return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
   return (
     <section className="bg-accent w-full">

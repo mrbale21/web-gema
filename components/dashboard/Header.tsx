@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { Calendar, Bell, User, Menu } from "lucide-react";
 
 export default function Header({
@@ -6,19 +7,37 @@ export default function Header({
 }: {
   onToggleSidebar: () => void;
 }) {
+  const [userName, setUserName] = useState("");
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/users/me", {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          console.warn("Unauthorized or error response");
+          return;
+        }
+        const data = await res.json();
+        setUserName(data.name);
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+      }
+    };
+    fetchUser();
+  }, []);
+
   return (
     <header className="bg-white border-b border-gray-100 px-4 md:px-8 py-4 sticky top-0 z-30">
       <div className="flex items-center justify-between">
         {/* Left */}
         <div className="flex items-center space-x-4">
-          {/* Tombol sidebar mobile */}
           <button
             onClick={onToggleSidebar}
             className="md:hidden p-2 rounded hover:bg-gray-100"
           >
             <Menu className="h-5 w-5 text-gray-600" />
           </button>
-
           <Calendar className="h-5 w-5 text-gray-400" />
           <span className="text-sm text-gray-600 hidden sm:block">
             {new Date().toLocaleDateString("id-ID", {
@@ -40,7 +59,9 @@ export default function Header({
               <User className="h-4 w-4 text-white" />
             </div>
             <div className="hidden sm:block">
-              <p className="text-sm font-medium text-gray-900">Admin User</p>
+              <p className="text-sm font-medium text-gray-900">
+                {userName || "Loading..."}
+              </p>
               <p className="text-xs text-gray-500">Administrator</p>
             </div>
           </div>

@@ -19,6 +19,7 @@ import LayoutPage from "../../layout-page";
 import { TenantType } from "@/types/tenant";
 import { NewsType } from "@/types/news";
 import { CommentType } from "@/types/comments";
+import Loading from "@/components/Common/Loading";
 
 const NewsDetailPage = () => {
   const [comment, setComment] = useState<CommentType[]>([]);
@@ -139,7 +140,7 @@ const NewsDetailPage = () => {
       ? navigator.share({ title: "Berita Sekolah", url: window.location.href })
       : navigator.clipboard.writeText(window.location.href);
   };
-  if (!news) return <p>Loading...</p>;
+  if (!news) return <Loading fullScreen type="spinner" />;
   return (
     <LayoutPage
       title="Detail Berita"
