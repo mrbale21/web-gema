@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { menus } from "@/data/menu";
 import { X } from "lucide-react";
-import MenuDropdown from "./MenuDropdown";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { CgMenuGridO } from "react-icons/cg";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
-import { IconType } from "react-icons";
+import MenuDropdown from "./MenuDropdown";
 
 export default function NavbarSection() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,16 +17,18 @@ export default function NavbarSection() {
 
   let lastScrollY = 0;
 
-  type MenuItem = {
-    label: string;
-    href: string;
-    icon?: IconType; // ← optional
-    submenus?: {
-      label: string;
-      href: string;
-      icon: IconType;
-    }[];
-  };
+  interface MenuItem {
+    id: number;
+    title: string;
+    href?: string;
+    submenus: Submenu[];
+  }
+
+  interface Submenu {
+    id: number;
+    title: string;
+    href?: string;
+  }
 
   useEffect(() => {
     const bannerHeight = 500;

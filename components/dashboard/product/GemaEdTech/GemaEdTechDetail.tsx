@@ -1,11 +1,11 @@
 "use client";
 
+import { GemaEdTechDetail } from "@/types/gemaedtech";
 import { useEffect, useState } from "react";
+import Alert from "../../../Common/Alert";
+import ConfirmAlert from "../../../Common/ConfirmAlert";
 import DynamicIcon from "../../../Common/DynamicIcon";
 import IconDropdown from "../../../Common/IconDropdown";
-import ConfirmAlert from "../../../Common/ConfirmAlert";
-import Alert from "../../../Common/Alert";
-import { GemaEdTechDetail } from "@/types/gemaedtech";
 
 export default function GemaEdTechDetailDashboard() {
   const [gemaEdTechDetail, setGemaEdTechDetail] = useState<GemaEdTechDetail[]>(
@@ -167,7 +167,7 @@ export default function GemaEdTechDetailDashboard() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Keunggulan GemaEdTech</h1>
+        <h1 className="text-3xl font-bold">Keunggulan Gema EdTech</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"

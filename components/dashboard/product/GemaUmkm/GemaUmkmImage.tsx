@@ -1,13 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { BsPencilSquare } from "react-icons/bs";
-import { IoPersonCircleOutline } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
-import ConfirmAlert from "../../../Common/ConfirmAlert";
-import Alert from "../../../Common/Alert";
 import { GemaImgUMKM } from "@/types/gemaumkm";
+import { useEffect, useState } from "react";
+import Alert from "../../../Common/Alert";
+import ConfirmAlert from "../../../Common/ConfirmAlert";
 
 export default function GemaUmkmImage() {
   const [gemaUmkm, setgemaUmkm] = useState<GemaImgUMKM[]>([]);
@@ -178,12 +174,12 @@ export default function GemaUmkmImage() {
         )
       )}
       <div className="flex justify-between items-start mb-6">
-        <h1 className="text-3xl font-bold">Image Gema UMKM</h1>
+        <h1 className="text-3xl font-bold">Foto Gema UMKM</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
         >
-          Tambah data image
+          Tambah Data
         </button>
       </div>
 

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
 import {
-  updateSubmenu,
   deleteSubmenu,
   getSubmenuById,
+  updateSubmenu,
 } from "@/lib/services/menuServices";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,

@@ -1,12 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BsPencilSquare } from "react-icons/bs";
-import { IoPersonCircleOutline } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
-import ConfirmAlert from "../Common/ConfirmAlert";
 import Alert from "../Common/Alert";
+import ConfirmAlert from "../Common/ConfirmAlert";
 
 interface Product {
   id: number;
@@ -188,12 +184,12 @@ export default function ProductDash() {
         )
       )}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Daftar Product</h1>
+        <h1 className="text-3xl font-bold">Daftar Produk</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
         >
-          Tambah Product
+          Tambah Produk
         </button>
       </div>
 
@@ -246,7 +242,7 @@ export default function ProductDash() {
                   onClick={() => handleDelete(item.id)}
                   className="text-red-500 hover:text-red-600"
                 >
-                  Delete
+                  Hapus
                 </button>
               </div>
             </div>

@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { GemaKop } from "@/types/gemakop";
 import { useEffect, useState } from "react";
 import Alert from "../../../Common/Alert";
 import ConfirmAlert from "../../../Common/ConfirmAlert";
 import GemaKopDetailDashboard from "./GemaKopDetail";
-import { GemaKop } from "@/types/gemakop";
 
 export default function GemaKopPage() {
   const [gemaKop, setGemaKop] = useState<GemaKop[]>([]);
@@ -141,7 +142,7 @@ export default function GemaKopPage() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Data Judul GemaKop</h1>
+        <h1 className="text-3xl font-bold">Data Judul Gema Koperasi</h1>
         <button
           onClick={() => setAddModal(true)}
           disabled={gemaKop.length >= 1}
@@ -184,7 +185,7 @@ export default function GemaKopPage() {
                 onClick={() => handleDelete(item.id)}
                 className="text-red-500 hover:text-red-600"
               >
-                Delete
+                Hapus
               </button>
             </div>
           </div>

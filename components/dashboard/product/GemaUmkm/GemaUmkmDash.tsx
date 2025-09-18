@@ -1,11 +1,11 @@
 "use client";
 
+import { GemaUMKM } from "@/types/gemaumkm";
 import { useEffect, useState } from "react";
 import Alert from "../../../Common/Alert";
 import ConfirmAlert from "../../../Common/ConfirmAlert";
 import GemaUmkmDetailDashboard from "./GemaUmkmDetail";
 import GemaUmkmImage from "./GemaUmkmImage";
-import { GemaUMKM } from "@/types/gemaumkm";
 
 export default function GemaUmkmPage() {
   const [gemaUmkm, setgemaUmkm] = useState<GemaUMKM[]>([]);
@@ -138,7 +138,7 @@ export default function GemaUmkmPage() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Data Judul GemaUMKM</h1>
+        <h1 className="text-3xl font-bold">Data Judul Gema UMKM</h1>
         <button
           onClick={() => setAddModal(true)}
           disabled={gemaUmkm.length >= 1}

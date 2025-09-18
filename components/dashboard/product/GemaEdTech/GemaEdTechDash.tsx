@@ -1,10 +1,10 @@
 "use client";
 
+import { GemaEdTech } from "@/types/gemaedtech";
 import { useEffect, useState } from "react";
 import Alert from "../../../Common/Alert";
 import ConfirmAlert from "../../../Common/ConfirmAlert";
 import GemaEdTechDetailDashboard from "./GemaEdTechDetail";
-import { GemaEdTech } from "@/types/gemaedtech";
 
 export default function GemaEdTechPage() {
   const [gemaEdTech, setGemaEdTech] = useState<GemaEdTech[]>([]);
@@ -143,7 +143,7 @@ export default function GemaEdTechPage() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Data Judul GemaEdTech</h1>
+        <h1 className="text-3xl font-bold">Data Judul Gema EdTech</h1>
         <button
           onClick={() => setAddModal(true)}
           disabled={gemaEdTech.length >= 1}

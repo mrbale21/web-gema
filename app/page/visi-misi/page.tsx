@@ -1,9 +1,9 @@
 "use client";
 
+import Loading from "@/components/Common/Loading";
 import { useEffect, useState } from "react";
 import { FaBullseye, FaLightbulb, FaQuoteLeft } from "react-icons/fa";
 import LayoutPage from "../layout-page";
-import Loading from "@/components/Common/Loading";
 
 interface VisiMisi {
   id: number;
@@ -63,9 +63,11 @@ export default function VisiMisi() {
                   {data.vs}
                 </h3>
               </div>
-              <p className="text-gray-700 leading-relaxed lg:text-lg">
-                {data.visi.map((v) => v.title)}
-              </p>
+              <ul className="list-disc list-outside pl-5 space-y-2 text-gray-700 leading-relaxed">
+                {data.visi.map((v) => (
+                  <li key={v.id}>{v.title}</li>
+                ))}
+              </ul>
             </div>
 
             {/* Misi */}

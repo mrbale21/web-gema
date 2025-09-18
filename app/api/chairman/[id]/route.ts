@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { uploadToS3Buffer } from "@/lib/s3";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET by id
 export async function GET(
@@ -64,7 +64,7 @@ export async function PUT(
         "title",
         "sub1",
         "sub2",
-        "desc",
+        "content",
         "position",
         "city",
         "period",

@@ -31,7 +31,7 @@ model Menu {
   id        Int       @id @default(autoincrement())
   title     String
   href      String?
-  submenus  Submenu[] 
+  submenus  Submenu[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -128,18 +128,18 @@ model Partner {
 
 model Chairman {
   id             Int        @id @default(autoincrement())
-  slug           String?    @unique
+  slug           String    @unique
   name           String
-  title          String
-  sub1           String
-  sub2           String
+  title          String?
+  sub1           String?
+  sub2           String?
   content        String   @default("")
   image          String?
-  position       String
-  period         String
+  position       String?
+  period         String?
   createdAt      DateTime @default(now())
-  city           String
-  ToS            String
+  city           String?
+  ToS            String?
 }
 
 model VisiMisi {

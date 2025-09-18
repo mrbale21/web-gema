@@ -1,13 +1,9 @@
 "use client";
 
 import { PartnerType } from "@/types/partner";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BsPencilSquare } from "react-icons/bs";
-import { IoPersonCircleOutline } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
-import ConfirmAlert from "../Common/ConfirmAlert";
 import Alert from "../Common/Alert";
+import ConfirmAlert from "../Common/ConfirmAlert";
 
 export default function PartnerDash() {
   const [partner, setPartner] = useState<PartnerType[]>([]);
@@ -183,7 +179,7 @@ export default function PartnerDash() {
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
         >
-          Tambah Partner
+          Tambah Data
         </button>
       </div>
 

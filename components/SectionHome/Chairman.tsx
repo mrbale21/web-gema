@@ -1,7 +1,7 @@
 "use client";
 
+import DOMPurify from "dompurify";
 import { Award, Quote } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import Loading from "../Common/Loading";
 
@@ -11,7 +11,7 @@ interface ChairmanData {
   title: string;
   sub1: string;
   sub2: string;
-  desc: string;
+  content: string;
   position: string;
   city: string;
   period: string;
@@ -112,7 +112,11 @@ export default function Chairman() {
                 </span>
               </p>
 
-              <p>{chairman.desc}</p>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(chairman.content),
+                }}
+              />
 
               <p className="text-lg font-medium text-gray-900">
                 {chairman.sub2}

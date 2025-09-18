@@ -1,11 +1,11 @@
 "use client";
 
+import { GemaKopDetail } from "@/types/gemakop";
 import { useEffect, useState } from "react";
+import Alert from "../../../Common/Alert";
+import ConfirmAlert from "../../../Common/ConfirmAlert";
 import DynamicIcon from "../../../Common/DynamicIcon";
 import IconDropdown from "../../../Common/IconDropdown";
-import ConfirmAlert from "../../../Common/ConfirmAlert";
-import Alert from "../../../Common/Alert";
-import { GemaKopDetail } from "@/types/gemakop";
 
 export default function GemaKopDetailDashboard() {
   const [gemaKopDetail, setGemaKopDetail] = useState<GemaKopDetail[]>([]);
@@ -165,7 +165,7 @@ export default function GemaKopDetailDashboard() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Keunggulan GemaKop</h1>
+        <h1 className="text-3xl font-bold">Keunggulan Gema Koperasi</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
@@ -215,7 +215,7 @@ export default function GemaKopDetailDashboard() {
                   onClick={() => handleDelete(item.id)}
                   className="text-red-500 hover:text-red-600"
                 >
-                  Delete
+                  Hapus
                 </button>
               </div>
             </div>
