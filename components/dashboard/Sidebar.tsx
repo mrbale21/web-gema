@@ -86,6 +86,11 @@ const navItems = [
         icon: GraduationCap,
       },
       {
+        id: "/admin/dashboard/gemaedtechapp",
+        label: "Gema EdTech App",
+        icon: GraduationCap,
+      },
+      {
         id: "/admin/dashboard/gemaumkm",
         label: "Gema UMKM",
         icon: Store,

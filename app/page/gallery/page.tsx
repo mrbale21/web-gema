@@ -11,12 +11,25 @@ export default function DokumentasiPage() {
   const [allGallery, setAllGallery] = useState<GalleryType[]>([]);
   const [allVideo, setAllVideo] = useState<VideoType[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const itemsPerPage = 12;
-  const [currentPage, setCurrentPage] = useState(1);
 
+  const itemsPerPage = 12;
+  const itemsVideoPerPage = 4;
+
+  const [currentPhotoPage, setCurrentPhotoPage] = useState(1);
+  const [currentVideoPage, setCurrentVideoPage] = useState(1);
+
+  // paging foto
   const totalPages = Math.ceil(allGallery.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
+  const startIndex = (currentPhotoPage - 1) * itemsPerPage;
   const currentPhotos = allGallery.slice(startIndex, startIndex + itemsPerPage);
+
+  // paging video
+  const totalPageVideos = Math.ceil(allVideo.length / itemsVideoPerPage);
+  const startIndexVideos = (currentVideoPage - 1) * itemsVideoPerPage;
+  const currentVideos = allVideo.slice(
+    startIndexVideos,
+    startIndexVideos + itemsVideoPerPage
+  );
 
   //   function ZoomableImage({ src }: { src: string }) {
   //   const [isZoomed, setIsZoomed] = useState(false);
@@ -83,6 +96,7 @@ export default function DokumentasiPage() {
         </p>
       </div>
 
+      {/* GALERI FOTO */}
       <section className="mb-16 px-4 lg:px-20">
         <h3 className="text-2xl font-bold mb-6 text-gray-800">Galeri Foto</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -97,7 +111,7 @@ export default function DokumentasiPage() {
               }
             >
               <Image
-                src={photo.imageUrl ?? "/assets/images/placeholder.jpg"} // fallback
+                src={photo.imageUrl ?? "/assets/images/placeholder.jpg"}
                 alt={photo.name}
                 width={500}
                 height={350}
@@ -106,13 +120,14 @@ export default function DokumentasiPage() {
             </div>
           ))}
         </div>
+
+        {/* Popup foto */}
         {selectedImage && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
-            onClick={() => setSelectedImage(null)} // klik background untuk close
+            onClick={() => setSelectedImage(null)}
           >
             <div className="relative max-w-5xl max-h-[90vh]">
-              {/* <ZoomableImage src={selectedImage} /> */}
               <Image
                 src={selectedImage}
                 alt="popup"
@@ -121,7 +136,7 @@ export default function DokumentasiPage() {
                 className="object-contain max-h-[90vh] w-auto mx-auto rounded-lg"
               />
               <button
-                className="absolute top-2 font-bold right-2 text-2xl text-red-600 hover:text-red-400 rounded-full p-2  "
+                className="absolute top-2 right-2 text-2xl text-red-600 hover:text-red-400 rounded-full p-2"
                 onClick={() => setSelectedImage(null)}
               >
                 ✕
@@ -130,31 +145,30 @@ export default function DokumentasiPage() {
           </div>
         )}
 
-        {totalPages > 1 && ( //paging
+        {/* Pagination foto */}
+        {totalPages > 1 && (
           <div className="flex justify-center mt-6 gap-2">
             <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => prev - 1)}
+              disabled={currentPhotoPage === 1}
+              onClick={() => setCurrentPhotoPage((prev) => prev - 1)}
               className="px-3 py-1 border rounded disabled:opacity-50"
             >
               Prev
             </button>
-
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
-                onClick={() => setCurrentPage(page)}
+                onClick={() => setCurrentPhotoPage(page)}
                 className={`px-3 py-1 border rounded ${
-                  currentPage === page ? "bg-green-500 text-white" : ""
+                  currentPhotoPage === page ? "bg-green-500 text-white" : ""
                 }`}
               >
                 {page}
               </button>
             ))}
-
             <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={currentPhotoPage === totalPages}
+              onClick={() => setCurrentPhotoPage((prev) => prev + 1)}
               className="px-3 py-1 border rounded disabled:opacity-50"
             >
               Next
@@ -163,10 +177,11 @@ export default function DokumentasiPage() {
         )}
       </section>
 
+      {/* GALERI VIDEO */}
       <section className="px-4 sm:px-20 pb-20">
         <h3 className="text-2xl font-bold mb-6 text-gray-800">Galeri Video</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {allVideo.map((video, index) => (
+          {currentVideos.map((video, index) => (
             <div
               key={index}
               className="aspect-video rounded-xl overflow-hidden shadow-lg hover:scale-105 transform transition duration-300"
@@ -188,6 +203,39 @@ export default function DokumentasiPage() {
             </div>
           ))}
         </div>
+
+        {/* Pagination video */}
+        {totalPageVideos > 1 && (
+          <div className="flex justify-center mt-6 gap-2">
+            <button
+              disabled={currentVideoPage === 1}
+              onClick={() => setCurrentVideoPage((prev) => prev - 1)}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Prev
+            </button>
+            {Array.from({ length: totalPageVideos }, (_, i) => i + 1).map(
+              (page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentVideoPage(page)}
+                  className={`px-3 py-1 border rounded ${
+                    currentVideoPage === page ? "bg-green-500 text-white" : ""
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+            <button
+              disabled={currentVideoPage === totalPageVideos}
+              onClick={() => setCurrentVideoPage((prev) => prev + 1)}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </section>
     </LayoutPage>
   );

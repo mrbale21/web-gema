@@ -1,6 +1,6 @@
 "use client";
 
-import { menus } from "@/data/menu";
+import { availableIcons } from "@/components/Common/AvailableIcons";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -8,27 +8,55 @@ import { CgMenuGridO } from "react-icons/cg";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 import MenuDropdown from "./MenuDropdown";
 
+interface MenuItem {
+  id: number;
+  title: string;
+  href?: string;
+  submenus: Submenu[];
+}
+
+interface Submenu {
+  id: number;
+  title: string;
+  href?: string;
+  icon?: string; // simpan nama icon (misalnya "BookOpen")
+}
+
+// helper untuk ambil icon dari availableIcons
+const getIcon = (iconName?: string, size: number = 18) => {
+  if (!iconName) return null;
+  const found = availableIcons.find((i) => i.name === iconName);
+  if (!found) return null;
+  return <span className="flex items-center justify-center">{found.icon}</span>;
+};
+
 export default function NavbarSection() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeSubIndex, setActiveSubIndex] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [isPastBanner, setIsPastBanner] = useState(false);
+  const [menus, setMenus] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   let lastScrollY = 0;
 
-  interface MenuItem {
-    id: number;
-    title: string;
-    href?: string;
-    submenus: Submenu[];
-  }
-
-  interface Submenu {
-    id: number;
-    title: string;
-    href?: string;
-  }
+  useEffect(() => {
+    fetch("/api/menu")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch menu");
+        return res.json();
+      })
+      .then((data: MenuItem[]) => {
+        setMenus(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     const bannerHeight = 500;
@@ -60,6 +88,9 @@ export default function NavbarSection() {
     setIsOpen(false); // Tutup mobile menu setelah klik
   };
 
+  if (loading) return <div>Loading menu...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <header
       className={`fixed top-0 left-0 w-full lg:py-6 z-50 transition-all duration-300 ${
@@ -82,27 +113,27 @@ export default function NavbarSection() {
             {menus.map((menu, index) =>
               menu.submenus && menu.submenus.length > 0 ? (
                 <MenuDropdown
-                  key={menu.label}
-                  title={menu.label}
+                  key={menu.id}
+                  title={menu.title}
                   icon="/storage/template_3/assets/images/icons/icon-caret.svg"
                   items={menu.submenus.map((sub) => ({
-                    label: sub.label,
+                    label: sub.title,
                     href: sub.href as string,
-                    icon: <sub.icon size={35} className="" />,
+                    icon: getIcon(sub.icon, 20),
                   }))}
                   cols={2}
                   width="w-[340px]"
                   textColor={isPastBanner ? "text-black" : "text-black"}
                 />
               ) : (
-                <li key={index}>
+                <li key={menu.id}>
                   <Link
                     href={menu.href as string}
                     className={`${
                       isPastBanner ? "text-black" : "text-black"
                     } hover:text-primary text-xl font-semibold transition duration-200`}
                   >
-                    {menu.label}
+                    {menu.title}
                   </Link>
                 </li>
               )
@@ -127,7 +158,7 @@ export default function NavbarSection() {
 
       {/* MOBILE MENU */}
       <nav
-        className={`lg:hidden text-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/10 mt-17 sm:mt-20 bg-white shadow-md flex flex-col max-h-auto transition-all duration-200 w-[300px] sm:w-[420px] z-[100] ${
+        className={`lg:hidden text-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/10 mt-17 sm:mt-20 bg-white shadow-md flex flex-col transition-all duration-200 w-[300px] sm:w-[420px] z-[100] ${
           isOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -136,15 +167,15 @@ export default function NavbarSection() {
         <div className="p-[30px] w-full text-center">
           <ul className="font-chivo font-medium text-[16px] leading-[16px] w-full">
             {menus.map((menu, index) => (
-              <li key={index} className="group py-[13px]">
+              <li key={menu.id} className="group py-[13px]">
                 {menu.submenus && menu.submenus.length > 0 ? (
                   <>
-                    {/* Parent Menu (center + icon) */}
+                    {/* Parent Menu */}
                     <div
                       className="flex items-center justify-center gap-2 transition-all duration-200 hover:text-primary  hover:translate-x-[2px] cursor-pointer"
                       onClick={() => toggleSubmenu(index)}
                     >
-                      <p>{menu.label}</p>
+                      <p>{menu.title}</p>
                       <IoIosArrowDropdownCircle
                         className={`transition-transform duration-200 ${
                           activeIndex === index ? "rotate-180" : ""
@@ -160,7 +191,7 @@ export default function NavbarSection() {
                     >
                       {menu.submenus.map((sub, subIndex) => (
                         <li
-                          key={subIndex}
+                          key={sub.id}
                           onClick={() => handleSubClick(subIndex)}
                           className={`text-md py-[15px] flex items-center justify-center gap-2 px-5 cursor-pointer transition-all duration-200 ${
                             activeSubIndex === subIndex
@@ -168,19 +199,12 @@ export default function NavbarSection() {
                               : "hover:bg-primary/20"
                           }`}
                         >
-                          <sub.icon
-                            size={18}
-                            className={`${
-                              activeSubIndex === subIndex
-                                ? "text-white"
-                                : "text-gray-700"
-                            }`}
-                          />
+                          {getIcon(sub.icon, 18)}
                           <Link
                             href={sub.href as string}
                             className="block text-center"
                           >
-                            {sub.label}
+                            {sub.title}
                           </Link>
                         </li>
                       ))}
@@ -192,7 +216,7 @@ export default function NavbarSection() {
                     className="flex items-center justify-center gap-2 transition-all duration-200 hover:text-primary hover:translate-x-[2px]"
                     onClick={() => setIsOpen(false)}
                   >
-                    {menu.label}
+                    {menu.title}
                   </Link>
                 )}
               </li>

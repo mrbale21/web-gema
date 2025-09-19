@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createMenu, getAllMenu } from "@/lib/services/menuServices";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,26 +13,10 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const contentType = req.headers.get("content-type") || "";
-    let data: any = {};
+    const body = await req.json();
+    const { title, href, submenus } = body;
 
-    if (contentType.includes("application/json")) {
-      data = await req.json();
-    } else if (contentType.includes("multipart/form-data")) {
-      const formData = await req.formData();
-      data = {
-        title: formData.get("title") as string,
-        href: formData.get("href") as string,
-        submenus: JSON.parse((formData.get("submenus") as string) || "[]"),
-      };
-    } else {
-      return NextResponse.json(
-        { error: "Unsupported Content-Type" },
-        { status: 400 }
-      );
-    }
-
-    const menu = await createMenu(data.title, data.href, data.submenus);
+    const menu = await createMenu(title, href, submenus);
     return NextResponse.json(menu);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

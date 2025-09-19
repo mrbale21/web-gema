@@ -40,6 +40,7 @@ model Submenu {
   id        Int      @id @default(autoincrement())
   title     String
   href      String?
+  icon      String?
   menuId    Int
   menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -287,4 +288,32 @@ model TrainingBenefit {
   id             Int        @id @default(autoincrement())
   slug           String?    @unique
   title          String
+}
+
+model Edtech {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  subtitle       String
+  video          String?
+}
+model EdtechDetail {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  subtitle       String
+}
+
+model TrainingApp {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  subtitle       String
+  video          String?
+}
+model TrainingAppDetail {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String
+  subtitle       String
 }

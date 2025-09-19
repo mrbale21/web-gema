@@ -1,10 +1,9 @@
 "use client";
 
-import product from "@/data/product";
-import TextHeader from "../Common/TextHeader";
-import { useEffect, useState } from "react";
 import { ProductType } from "@/types/product";
+import { useEffect, useState } from "react";
 import Loading from "../Common/Loading";
+import TextHeader from "../Common/TextHeader";
 
 export default function ProductSection() {
   const [product, setProduct] = useState<ProductType[]>([]);
@@ -41,7 +40,8 @@ export default function ProductSection() {
       <div className="bg-gray-200 rounded-lg overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0.5 p-0.5">
           {product.map((item, idx) => (
-            <div
+            <a
+              href={item.link}
               key={idx}
               className="relative bg-accent flex flex-col justify-between items-center group overflow-hidden"
             >
@@ -64,7 +64,7 @@ export default function ProductSection() {
                   {item.desc}
                 </div>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>

@@ -1,10 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { JSX, useEffect, useState } from "react";
-import LayoutPage from "../layout-page";
 import DynamicIcon from "@/components/Common/DynamicIcon";
 import { GemaEdTech, GemaEdTechDetail } from "@/types/gemaedtech";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import LayoutPage from "../layout-page";
 
 export default function GemaEdTechPage() {
   const [gemaedtech, setGemaedtech] = useState<GemaEdTech | null>(null);
@@ -80,16 +80,31 @@ export default function GemaEdTechPage() {
         </div>
 
         {/* Call to Action */}
-        <motion.div
-          className="mt-16 text-center"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <button className="bg-green-600 text-white px-6 py-3 rounded-full shadow-md hover:bg-green-700 transition">
-            Mulai Belajar Sekarang
-          </button>
-        </motion.div>
+        <div className="flex items-center justify-center gap-5">
+          <motion.div
+            className="mt-16 text-center"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <a
+              href={`/page/gema-edtech/gemaApp/`}
+              className="bg-secondary text-white px-6 py-3 rounded-full shadow-md hover:bg-green-700 transition"
+            >
+              Mulai Belajar Sekarang
+            </a>
+          </motion.div>
+          <motion.div
+            className="mt-16 text-center"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <button className="bg-primary text-white px-6 py-3 rounded-full shadow-md hover:bg-green-700 transition">
+              Hubungi Kami
+            </button>
+          </motion.div>
+        </div>
       </div>
     </LayoutPage>
   );
