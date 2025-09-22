@@ -1,4 +1,5 @@
 "use client";
+
 import {
   BarChart3,
   BookOpen,
@@ -26,92 +27,123 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const navItems = [
-  { id: "/admin/dashboard", label: "Dashboard", icon: Home },
-  {
-    id: "head",
-    label: "Header",
-    icon: LayoutPanelLeft,
-    children: [
-      { id: "/admin/dashboard/navbar", label: "Navbar", icon: LayoutPanelLeft },
-      { id: "/admin/dashboard/banner", label: "Banner", icon: Image },
-    ],
-  },
-  {
-    id: "posts",
-    label: "Beranda",
-    icon: Home,
-    children: [
-      { id: "/admin/dashboard/product", label: "Produk", icon: Package },
-      {
-        id: "/admin/dashboard/chairman",
-        label: "Ketua Umum",
-        icon: UserCircle,
-      },
-      { id: "/admin/dashboard/statistic", label: "Statistik", icon: BarChart3 },
-      { id: "/admin/dashboard/partner", label: "Partner", icon: Handshake },
-      { id: "/admin/dashboard/superior", label: "Keunggulan", icon: Star },
-    ],
-  },
-  {
-    id: "profile",
-    label: "Profil",
-    icon: UserCircle,
-    children: [
-      { id: "/admin/dashboard/timeline", label: "Sejarah", icon: BookOpen },
-      { id: "/admin/dashboard/visi-misi", label: "Visi Misi", icon: Target },
-      { id: "/admin/dashboard/program", label: "Program", icon: FileText },
-      {
-        id: "/admin/dashboard/principle",
-        label: "Nilai & Prinsip",
-        icon: HeartHandshake,
-      },
-    ],
-  },
-  {
-    id: "product",
-    label: "Produk",
-    icon: Store,
-    children: [
-      {
-        id: "/admin/dashboard/gemakop",
-        label: "Gema Koperasi",
-        icon: Layers3,
-      },
-      {
-        id: "/admin/dashboard/gemaedtech",
-        label: "Gema EdTech",
-        icon: GraduationCap,
-      },
-      {
-        id: "/admin/dashboard/gemaedtechapp",
-        label: "Gema EdTech App",
-        icon: GraduationCap,
-      },
-      {
-        id: "/admin/dashboard/gemaumkm",
-        label: "Gema UMKM",
-        icon: Store,
-      },
-      {
-        id: "/admin/dashboard/training",
-        label: "Pelatihan",
-        icon: ClipboardList,
-      },
-    ],
-  },
-  { id: "/admin/dashboard/news", label: "Blog", icon: Newspaper },
-  {
-    id: "/admin/dashboard/documentasi",
-    label: "Dokumentasi",
-    icon: Camera,
-  },
-  { id: "/admin/dashboard/users", label: "Pengguna", icon: Users },
-  { id: "/admin/dashboard/tenant", label: "Informasi", icon: Info },
-  // { id: "/admin/dashboard/settings", label: "Settings", icon: Settings },
-];
+interface Product {
+  id: number;
+  title: string;
+}
+
+export function useNavItems() {
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("/api/newprod");
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data);
+        }
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    }
+    fetchProducts();
+  }, []);
+
+  const navItems = [
+    { id: "/admin/dashboard", label: "Dashboard", icon: Home },
+    {
+      id: "head",
+      label: "Header",
+      icon: LayoutPanelLeft,
+      children: [
+        {
+          id: "/admin/dashboard/navbar",
+          label: "Navbar",
+          icon: LayoutPanelLeft,
+        },
+        { id: "/admin/dashboard/banner", label: "Banner", icon: Image },
+      ],
+    },
+    {
+      id: "posts",
+      label: "Beranda",
+      icon: Home,
+      children: [
+        { id: "/admin/dashboard/product", label: "Produk", icon: Package },
+        {
+          id: "/admin/dashboard/chairman",
+          label: "Ketua Umum",
+          icon: UserCircle,
+        },
+        {
+          id: "/admin/dashboard/statistic",
+          label: "Statistik",
+          icon: BarChart3,
+        },
+        { id: "/admin/dashboard/partner", label: "Partner", icon: Handshake },
+        { id: "/admin/dashboard/superior", label: "Keunggulan", icon: Star },
+      ],
+    },
+    {
+      id: "profile",
+      label: "Profil",
+      icon: UserCircle,
+      children: [
+        { id: "/admin/dashboard/timeline", label: "Sejarah", icon: BookOpen },
+        { id: "/admin/dashboard/visi-misi", label: "Visi Misi", icon: Target },
+        { id: "/admin/dashboard/program", label: "Program", icon: FileText },
+        {
+          id: "/admin/dashboard/principle",
+          label: "Nilai & Prinsip",
+          icon: HeartHandshake,
+        },
+      ],
+    },
+    {
+      id: "product",
+      label: "Produk",
+      icon: Store,
+      children: [
+        {
+          id: "/admin/dashboard/gemakop",
+          label: "Gema Koperasi",
+          icon: Layers3,
+        },
+        {
+          id: "/admin/dashboard/gemaedtech",
+          label: "Gema EdTech",
+          icon: GraduationCap,
+        },
+        {
+          id: "/admin/dashboard/gemaedtechapp",
+          label: "Gema EdTech App",
+          icon: GraduationCap,
+        },
+        { id: "/admin/dashboard/gemaumkm", label: "Gema UMKM", icon: Store },
+        {
+          id: "/admin/dashboard/training",
+          label: "Pelatihan",
+          icon: ClipboardList,
+        },
+        // produk dari API newprod
+        ...products.map((p) => ({
+          id: `/admin/dashboard/newprod/${p.id}`,
+          label: p.title,
+          icon: ClipboardList,
+        })),
+      ],
+    },
+    { id: "/admin/dashboard/news", label: "Blog", icon: Newspaper },
+    { id: "/admin/dashboard/documentasi", label: "Dokumentasi", icon: Camera },
+    { id: "/admin/dashboard/users", label: "Pengguna", icon: Users },
+    { id: "/admin/dashboard/tenant", label: "Informasi", icon: Info },
+  ];
+
+  return navItems;
+}
 
 export default function Sidebar({
   isOpen,
@@ -121,6 +153,7 @@ export default function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const navItems = useNavItems(); // ✅ panggil hook
   const [openMenus, setOpenMenus] = useState<string[]>([]);
 
   const toggleMenu = (id: string) => {
@@ -173,7 +206,7 @@ export default function Sidebar({
                           ? "bg-blue-50 text-blue-700 border border-blue-200"
                           : "text-gray-700 hover:bg-gray-100"
                       }`}
-                      onClick={onClose} // 🔥 tutup sidebar kalau klik menu (di mobile)
+                      onClick={onClose}
                     >
                       <Icon className="h-5 w-5 mr-3" />
                       <span className="font-medium">{item.label}</span>
@@ -197,7 +230,7 @@ export default function Sidebar({
 
                       {isMenuOpen && (
                         <ul className="mt-1 ml-6 space-y-1">
-                          {item.children.map((child) => {
+                          {item.children?.map((child) => {
                             const ChildIcon = child.icon;
                             return (
                               <li key={child.id}>
@@ -208,7 +241,7 @@ export default function Sidebar({
                                       ? "bg-blue-50 text-blue-700 border border-blue-200"
                                       : "text-gray-600 hover:bg-gray-100"
                                   }`}
-                                  onClick={onClose} // 🔥 tutup sidebar kalau klik submenu
+                                  onClick={onClose}
                                 >
                                   <ChildIcon className="h-4 w-4 mr-2" />
                                   <span className="text-sm">{child.label}</span>

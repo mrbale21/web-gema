@@ -1,17 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { Product } from "@/types/newProduct";
 import { useEffect, useState } from "react";
 import Alert from "../Common/Alert";
 import ConfirmAlert from "../Common/ConfirmAlert";
-
-interface Product {
-  id: number;
-  name: string;
-  desc: string;
-  link: string;
-  image?: string | null;
-  createdAt: string;
-}
 
 export default function ProductDash() {
   const [Product, setProduct] = useState<Product[]>([]);
@@ -35,7 +28,7 @@ export default function ProductDash() {
   } | null>(null);
 
   const fetchProduct = async () => {
-    const res = await fetch("/api/product");
+    const res = await fetch("/api/newprod");
     const data = await res.json();
     setProduct(data);
   };
@@ -55,20 +48,14 @@ export default function ProductDash() {
     e.preventDefault();
     setError("");
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("link", link);
-    formData.append("desc", desc);
-    if (imageFile) formData.append("image", imageFile);
-
     try {
-      const res = await fetch("/api/product", {
+      const res = await fetch("/api/newprod", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: name, desc }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || "Something went wrong");
         return;
@@ -95,7 +82,7 @@ export default function ProductDash() {
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      const res = await fetch(`/api/product/${selectedProduct.id}`, {
+      const res = await fetch(`/api/newprod/${selectedProduct.id}`, {
         method: "PUT",
         body: formData,
       });
@@ -124,7 +111,7 @@ export default function ProductDash() {
       onConfirm: async () => {
         setAlert(null);
         try {
-          const res = await fetch(`/api/product/${id}`, {
+          const res = await fetch(`/api/newprod/${id}`, {
             method: "DELETE",
           });
           const data = await res.json();

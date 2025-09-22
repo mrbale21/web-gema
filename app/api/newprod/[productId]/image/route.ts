@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { uploadToS3Buffer } from "@/lib/s3";
 import {
-  createGemaUmkmImg,
-  getAllGemaUmkmImg,
-} from "@/lib/services/gemaUmkmService";
+  createNewProductImage,
+  getNewProductImages,
+} from "@/lib/services/newProductServices";
 import { NextRequest, NextResponse } from "next/server";
 
 const MAX_SIZE = 6 * 1024 * 1024; // 6MB
@@ -16,28 +15,40 @@ const ALLOWED_TYPES = [
   "image/svg+xml",
 ];
 
-export async function GET() {
+export async function GET(
+  req: Request,
+  { params }: { params: { productId: string } }
+) {
   try {
-    const GemaUmkmImg = await getAllGemaUmkmImg();
-    return NextResponse.json(GemaUmkmImg);
+    const productId = Number(params.productId);
+    if (isNaN(productId))
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+
+    const images = await getNewProductImages(productId);
+    return NextResponse.json(images);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { productId: string } }
+) {
   try {
+    const productId = Number(params.productId);
+    if (isNaN(productId))
+      return NextResponse.json({ error: "Invalid productId" }, { status: 400 });
+
     let data: any = {};
-    let imageUrl: string | undefined = undefined;
+    let image: string | undefined;
 
     const contentType = req.headers.get("content-type") || "";
 
     if (contentType.includes("application/json")) {
-      // 📌 Kalau JSON
       data = await req.json();
-      imageUrl = data.image; // ambil langsung dari JSON body
+      image = data.image;
     } else if (contentType.includes("multipart/form-data")) {
-      // 📌 Kalau FormData
       const formData = await req.formData();
       data = {
         name: formData.get("name") as string,
@@ -46,7 +57,6 @@ export async function POST(req: NextRequest) {
 
       const imageFile = formData.get("image") as File | null;
       if (imageFile) {
-        // Validasi file
         if (imageFile.size === 0) throw new Error("File kosong");
         if (imageFile.size > MAX_SIZE)
           throw new Error(`File maksimal ${MAX_SIZE / 1024 / 1024}MB`);
@@ -55,13 +65,10 @@ export async function POST(req: NextRequest) {
             `Tipe file harus salah satu dari: ${ALLOWED_TYPES.join(", ")}`
           );
 
-        // Convert ke buffer
         const buffer = await streamToBuffer(imageFile.stream());
-
-        // Upload ke S3
         const fileName = Date.now() + "_" + imageFile.name;
         const s3Key = `GemaUmkmImg/${fileName}`;
-        imageUrl = await uploadToS3Buffer(
+        image = await uploadToS3Buffer(
           buffer,
           s3Key,
           imageFile.type || "application/octet-stream"
@@ -74,9 +81,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const GemaUmkmImg = await createGemaUmkmImg(data.name, data.desc, imageUrl);
+    const NewCreateProduct = await createNewProductImage(productId, {
+      name: data.name,
+      desc: data.desc,
+      image,
+    });
 
-    return NextResponse.json(GemaUmkmImg);
+    return NextResponse.json(NewCreateProduct, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
