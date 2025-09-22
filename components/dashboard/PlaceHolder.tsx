@@ -171,11 +171,7 @@ export default function Placeholder() {
       onCancel: () => setAlert(null),
     });
   };
-  const handleDeleteSubmenu = (
-    type: "submenus",
-    menuId: number,
-    id: number
-  ) => {
+  const handleDeleteSubmenu = (type: string, menuId: number, id: number) => {
     setAlert({
       type: "warning",
       message: `Yakin hapus ${type}?`,
@@ -302,7 +298,7 @@ export default function Placeholder() {
                       <button
                         className="text-red-500"
                         onClick={() =>
-                          handleDeleteSubmenu("submenus", menu.id, sub.id)
+                          handleDeleteSubmenu(sub.title, menu.id, sub.id)
                         }
                       >
                         Delete

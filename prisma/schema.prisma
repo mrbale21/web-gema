@@ -317,3 +317,46 @@ model TrainingAppDetail {
   title          String
   subtitle       String
 }
+
+model NewProducts {
+  id           Int     @id @default(autoincrement())
+  slug         String?    @unique
+  name         String?
+  desc         String?
+  link         String?
+  image        String?
+
+  products     NewProduct[]
+}
+
+model NewProduct {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String?
+  desc           String?
+  auth           NewProducts?        @relation(fields:[authId], references: [id])
+  authId         Int?
+
+  image          NewProductImage[]
+  detail         NewProductDetail[]
+}
+
+model NewProductImage {
+  id           Int     @id @default(autoincrement())
+  slug         String?    @unique
+  name         String?
+  desc         String?
+  image        String?
+  auth         NewProduct?        @relation(fields:[authId], references: [id])
+  authId       Int?
+}
+
+model NewProductDetail {
+  id             Int        @id @default(autoincrement())
+  slug           String?    @unique
+  title          String?
+  desc           String?
+  icon           String?
+  auth         NewProduct?        @relation(fields:[authId], references: [id])
+  authId       Int?
+}
