@@ -6,28 +6,37 @@ import BlogTextEditor from "@/components/Common/TextEditor";
 import ConfirmAlert from "@/components/Common/ConfirmAlert";
 import Alert from "@/components/Common/Alert";
 
+type CategoryType = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
 export default function AddNewsPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tag, setTag] = useState("");
   const [editor, setEditor] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [categoryId, setCategoryId] = useState<number | null>(null); // kategori
+  const [categories, setCategories] = useState<CategoryType[]>([]);
+
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  const [alert, setAlert] = useState<{
-    type: "success" | "error" | "warning" | "info";
-    message: string;
-    show?: boolean;
-    onClose?: () => void;
-    onConfirm?: () => void;
-    onCancel?: () => void;
-  } | null>(null);
+  const [alert, setAlert] = useState<any>(null);
 
+  // ambil kategori
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data));
+  }, []);
+
+  // jika edit berita
   useEffect(() => {
     if (id) {
       fetch(`/api/news/${id}`)
@@ -37,18 +46,13 @@ export default function AddNewsPage() {
           setContent(data.content);
           setTag(data.tag);
           setEditor(data.editor);
+          setCategoryId(data.categoryId || null);
           setMounted(true);
         });
     } else {
       setMounted(true);
     }
   }, [id]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +64,7 @@ export default function AddNewsPage() {
     formData.append("tag", tag);
     formData.append("editor", editor);
     if (imageFile) formData.append("image", imageFile);
+    if (categoryId) formData.append("categoryId", categoryId.toString());
 
     try {
       const res = await fetch(id ? `/api/news/${id}` : "/api/news", {
@@ -68,7 +73,6 @@ export default function AddNewsPage() {
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || "Terjadi kesalahan");
         return;
@@ -91,29 +95,8 @@ export default function AddNewsPage() {
 
   return (
     <div className="min-h-screen p-6 bg-gray-50">
-      {alert && alert.onConfirm ? (
-        <ConfirmAlert
-          type={alert.type}
-          message={alert.message}
-          show={alert.show ?? true}
-          onConfirm={alert.onConfirm}
-          onCancel={alert.onCancel}
-        />
-      ) : (
-        alert && (
-          <Alert
-            type={alert.type}
-            message={alert.message}
-            duration={6000}
-            onClose={() => setAlert(null)}
-          />
-        )
-      )}
+      {/* form berita */}
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">
-          {id ? "Edit Berita" : "Tambah Berita"}
-        </h1>
-
         <form
           onSubmit={handleSubmit}
           className="space-y-6 bg-white p-6 rounded-xl shadow-md"
@@ -125,11 +108,10 @@ export default function AddNewsPage() {
             </label>
             <input
               type="text"
-              placeholder="Masukkan judul berita"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 text-gray-800"
+              className="w-full border rounded-lg p-3 text-gray-800"
             />
           </div>
 
@@ -144,68 +126,70 @@ export default function AddNewsPage() {
             />
           </div>
 
-          {/* Tag dan Editor */}
+          {/* Kategori */}
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
+              Kategori
+            </label>
+            <select
+              value={categoryId ?? ""}
+              onChange={(e) => setCategoryId(Number(e.target.value))}
+              required
+              className="w-full border rounded-lg p-3  text-gray-800"
+            >
+              <option value="">-- Pilih Kategori --</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Tag + Editor */}
           <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tag
-              </label>
-              <input
-                type="text"
-                placeholder="Contoh: Wisata, Kuliner"
-                value={tag}
-                onChange={(e) => setTag(e.target.value)}
-                className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 text-gray-800"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Editor
-              </label>
-              <input
-                type="text"
-                placeholder="Nama editor"
-                value={editor}
-                onChange={(e) => setEditor(e.target.value)}
-                required
-                className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400 text-gray-800"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Tag"
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              className="border p-3 rounded-lg  text-gray-800"
+            />
+            <input
+              type="text"
+              placeholder="Editor"
+              value={editor}
+              onChange={(e) => setEditor(e.target.value)}
+              className="border p-3 rounded-lg  text-gray-800"
+              required
+            />
           </div>
 
           {/* Upload Gambar */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Gambar Thumbnail
+              Gambar
             </label>
             <input
               type="file"
               accept="image/*"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-600 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none py-2"
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+              className="  text-gray-700"
             />
-            {imageFile && (
-              <p className="mt-2 text-sm text-gray-500">
-                File dipilih: {imageFile.name}
-              </p>
-            )}
           </div>
 
-          {/* Error */}
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
           {/* Actions */}
-          <div className="flex flex-wrap gap-3">
+          <div className="flex gap-3">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
             >
               {id ? "Update" : "Tambah"}
             </button>
             <button
               type="button"
               onClick={() => router.push("/admin/dashboard/news")}
-              className="border px-6 py-2 rounded-lg hover:bg-gray-100 transition"
+              className="border px-6 py-2 rounded-lg  text-gray-600 hover:bg-gray-200"
             >
               Batal
             </button>

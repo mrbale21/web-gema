@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   deleteMenu,
   getMenuById,
@@ -10,13 +11,10 @@ export async function GET(
   { params }: { params: { menuId: string } }
 ) {
   try {
-    const { menuId } = params;
-    const id = parseInt(menuId, 10);
+    const id = parseInt(params.menuId, 10);
     const menu = await getMenuById(id);
-
-    if (!menu) {
+    if (!menu)
       return NextResponse.json({ error: "Menu not found" }, { status: 404 });
-    }
     return NextResponse.json(menu);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -25,14 +23,11 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  context: { params: Promise<{ menuId: string }> }
+  { params }: { params: { menuId: string } }
 ) {
   try {
-    const { menuId } = await context.params;
-    const id = parseInt(menuId, 10);
-
+    const id = parseInt(params.menuId, 10);
     const data = await req.json();
-
     const updated = await updateMenu(id, data);
     return NextResponse.json(updated);
   } catch (err: any) {
@@ -42,10 +37,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { menuId: string } }
 ) {
   try {
-    const id = parseInt(params.id, 10);
+    const id = parseInt(params.menuId, 10);
     const deleted = await deleteMenu(id);
     return NextResponse.json({ message: "Menu dihapus", deleted });
   } catch (err: any) {

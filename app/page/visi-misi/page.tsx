@@ -1,9 +1,9 @@
 "use client";
 
+import Loading from "@/components/Common/Loading";
 import { useEffect, useState } from "react";
 import { FaBullseye, FaLightbulb, FaQuoteLeft } from "react-icons/fa";
 import LayoutPage from "../layout-page";
-import Loading from "@/components/Common/Loading";
 
 interface VisiMisi {
   id: number;
@@ -60,12 +60,14 @@ export default function VisiMisi() {
               <div className="flex items-center gap-4 mb-4">
                 <FaLightbulb className="text-primary text-4xl" />
                 <h3 className="text-2xl font-bold text-primary lg:text-3xl">
-                  {data.vs}
+                  Visi
                 </h3>
               </div>
-              <p className="text-gray-700 leading-relaxed lg:text-lg">
-                {data.visi.map((v) => v.title)}
-              </p>
+              <ul className="list-disc list-outside pl-5 space-y-2 text-gray-700 leading-relaxed">
+                {data.visi.map((v) => (
+                  <li key={v.id}>{v.title}</li>
+                ))}
+              </ul>
             </div>
 
             {/* Misi */}
@@ -73,7 +75,7 @@ export default function VisiMisi() {
               <div className="flex items-center gap-4 mb-4">
                 <FaBullseye className="text-primary text-4xl" />
                 <h3 className="text-2xl font-bold text-primary lg:text-3xl">
-                  {data.ms}
+                  Misi
                 </h3>
               </div>
 
@@ -91,11 +93,9 @@ export default function VisiMisi() {
           <div className="max-w-3xl mx-auto text-center">
             <FaQuoteLeft className="text-primary text-4xl mx-auto mb-4" />
             <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-3">
-              Motto Gema Nahdliyin
+              {data.titleMoto}
             </h3>
-            <p className="text-lg italic text-gray-700">
-              Bersinergi, Berdaya, dan Berkah untuk Umat
-            </p>
+            <p className="text-lg italic text-gray-700">{data.moto}</p>
           </div>
         </section>
       </LayoutPage>

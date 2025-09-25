@@ -36,54 +36,83 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id))
+    const { id } = await context.params;
+    const newsId = parseInt(id, 10);
+
+    if (isNaN(newsId)) {
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-
-    const formData = await req.formData();
-    const title = formData.get("title") as string;
-    const tag = formData.get("tag") as string;
-    const editor = formData.get("editor") as string;
-    const content = formData.get("content") as string;
-    const imageFile = formData.get("image") as File | null;
-
-    let imageUrl: string | undefined = undefined;
-
-    if (imageFile) {
-      // Validasi file
-      if (imageFile.size === 0) throw new Error("File kosong");
-      if (imageFile.size > MAX_SIZE)
-        throw new Error(`File maksimal ${MAX_SIZE / 1024 / 1024}MB`);
-      if (!ALLOWED_TYPES.includes(imageFile.type))
-        throw new Error(
-          `Tipe file harus salah satu dari: ${ALLOWED_TYPES.join(", ")}`
-        );
-
-      // Convert ke buffer
-      const buffer = await streamToBuffer(imageFile.stream());
-
-      // Upload ke S3
-      const fileName = Date.now() + "_" + imageFile.name;
-      const s3Key = `news/${fileName}`;
-      imageUrl = await uploadToS3Buffer(
-        buffer,
-        s3Key,
-        imageFile.type || "application/octet-stream"
-      );
     }
 
-    const updatedNews = await updateMenu(
-      id,
-      title,
-      content,
-      imageUrl,
-      tag,
-      editor
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      const body = await req.json();
+      const { visibility, categoryId } = body;
+
+      const updatedNews = await updateMenu(
+        newsId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        categoryId ? Number(categoryId) : undefined,
+        visibility
+      );
+      return NextResponse.json(updatedNews);
+    }
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      const title = formData.get("title") as string;
+      const tag = formData.get("tag") as string;
+      const editor = formData.get("editor") as string;
+      const content = formData.get("content") as string;
+      const categoryId = formData.get("categoryId")
+        ? Number(formData.get("categoryId"))
+        : undefined;
+      const imageFile = formData.get("image") as File | null;
+
+      let imageUrl: string | undefined = undefined;
+
+      if (imageFile) {
+        if (imageFile.size === 0) throw new Error("File kosong");
+        if (imageFile.size > MAX_SIZE)
+          throw new Error(`File maksimal ${MAX_SIZE / 1024 / 1024}MB`);
+        if (!ALLOWED_TYPES.includes(imageFile.type))
+          throw new Error(
+            `Tipe file harus salah satu dari: ${ALLOWED_TYPES.join(", ")}`
+          );
+
+        const buffer = await streamToBuffer(imageFile.stream());
+        const fileName = Date.now() + "_" + imageFile.name;
+        const s3Key = `news/${fileName}`;
+        imageUrl = await uploadToS3Buffer(
+          buffer,
+          s3Key,
+          imageFile.type || "application/octet-stream"
+        );
+      }
+
+      const updatedNews = await updateMenu(
+        newsId,
+        title,
+        content,
+        imageUrl,
+        tag,
+        editor,
+        categoryId
+      );
+      return NextResponse.json(updatedNews);
+    }
+
+    return NextResponse.json(
+      { error: "Unsupported Content-Type" },
+      { status: 400 }
     );
-    return NextResponse.json(updatedNews);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
@@ -105,7 +134,6 @@ export async function DELETE(
   }
 }
 
-// Helper untuk konversi stream ke buffer
 async function streamToBuffer(
   stream: ReadableStream<Uint8Array> | null | undefined
 ) {

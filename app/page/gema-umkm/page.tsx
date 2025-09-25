@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
 import DynamicIcon from "@/components/Common/DynamicIcon";
 import { GemaImgUMKM, GemaUMKM, GemaUMKMDetail } from "@/types/gemaumkm";
+import { TenantType } from "@/types/tenant";
+import WhatsappButton from "@/components/Common/WhatsAppButton";
+import Loading from "@/components/Common/Loading";
 
 // interface sesuai model Prisma
 
@@ -14,29 +17,33 @@ export default function GemaUMKMPage() {
   const [umkmImgs, setUmkmImgs] = useState<GemaImgUMKM[]>([]);
   const [umkmDetails, setUmkmDetails] = useState<GemaUMKMDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tenant, setTenant] = useState<TenantType | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [umkmRes, imgRes, detailRes] = await Promise.all([
+        const [umkmRes, imgRes, detailRes, tenantRes] = await Promise.all([
           fetch("/api/gemaumkm"),
           fetch("/api/gemaumkm/image"),
           fetch("/api/gemaumkm/detail"),
+          fetch("/api/tenant"),
         ]);
 
-        if (!umkmRes.ok || !imgRes.ok || !detailRes.ok) {
+        if (!umkmRes.ok || !imgRes.ok || !detailRes.ok || !tenantRes.ok) {
           throw new Error("Failed to fetch data");
         }
 
-        const [umkmData, imgData, detailData] = await Promise.all([
+        const [umkmData, imgData, detailData, tenant] = await Promise.all([
           umkmRes.json(),
           imgRes.json(),
           detailRes.json(),
+          tenantRes.json(),
         ]);
 
         setUmkm(umkmData);
         setUmkmImgs(imgData);
         setUmkmDetails(detailData);
+        setTenant(tenant);
       } catch (error) {
         console.error("Error fetching UMKM data:", error);
       } finally {
@@ -48,11 +55,7 @@ export default function GemaUMKMPage() {
   }, []);
 
   if (loading) {
-    return (
-      <LayoutPage title="Loading..." titlePage="Loading" desc="Loading data">
-        <div className="text-center py-20">Loading data UMKM...</div>
-      </LayoutPage>
-    );
+    return <Loading fullScreen type="spinner" text="Memuat Data Gema UMKM" />;
   }
 
   return (
@@ -142,13 +145,17 @@ export default function GemaUMKMPage() {
 
         {/* Call to Action */}
         <div className="text-center mt-16">
-          <motion.a
-            href="#"
-            whileHover={{ scale: 1.1 }}
-            className="inline-block px-8 py-4 bg-green-600 text-white rounded-full shadow-lg font-medium"
-          >
-            Gabung Mitra Sekarang
-          </motion.a>
+          <motion.div whileHover={{ scale: 1.1 }} className="inline-block">
+            <WhatsappButton
+              phone={tenant?.phone2 || ""}
+              message={`Halo ${
+                tenant?.nameTenant || "Tenant"
+              }, saya ingin menanyakan sesuatu.`}
+              className="px-8 py-4 bg-green-600 text-white rounded-full shadow-lg font-medium inline-block text-center"
+            >
+              Hubungi Sekarang!
+            </WhatsappButton>
+          </motion.div>
         </div>
       </section>
     </LayoutPage>

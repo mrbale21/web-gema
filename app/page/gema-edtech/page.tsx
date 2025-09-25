@@ -1,33 +1,40 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { JSX, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
 import DynamicIcon from "@/components/Common/DynamicIcon";
 import { GemaEdTech, GemaEdTechDetail } from "@/types/gemaedtech";
+import { TenantType } from "@/types/tenant";
+import WhatsappButton from "@/components/Common/WhatsAppButton";
 
 export default function GemaEdTechPage() {
   const [gemaedtech, setGemaedtech] = useState<GemaEdTech | null>(null);
   const [gemaedtechdetail, setGemaedtechdetail] = useState<GemaEdTechDetail[]>(
     []
   );
+  const [tenant, setTenant] = useState<TenantType | null>(null);
 
-  // ambil hanya 1 item
   useEffect(() => {
     fetch("/api/gemaedtech")
       .then((res) => res.json())
       .then((data) => {
         if (data && data.length > 0) {
-          setGemaedtech(data[0]); // ambil item pertama saja
+          setGemaedtech(data[0]);
         }
       });
   }, []);
 
-  // ambil semua item
   useEffect(() => {
     fetch("/api/gemaedtech/detail")
       .then((res) => res.json())
       .then((data) => setGemaedtechdetail(data));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/tenant")
+      .then((res) => res.json())
+      .then((data) => setTenant(data));
   }, []);
 
   return (
@@ -80,16 +87,22 @@ export default function GemaEdTechPage() {
         </div>
 
         {/* Call to Action */}
-        <motion.div
-          className="mt-16 text-center"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <button className="bg-green-600 text-white px-6 py-3 rounded-full shadow-md hover:bg-green-700 transition">
-            Mulai Belajar Sekarang
-          </button>
-        </motion.div>
+        {tenant && tenant.phone2 && (
+          <motion.div
+            className="mt-16 text-center"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <WhatsappButton
+              phone={tenant.phone2}
+              message={`Halo ${tenant.nameTenant}, saya ingin menanyakan sesuatu.`}
+              className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/80"
+            >
+              Hubungi via WA
+            </WhatsappButton>
+          </motion.div>
+        )}
       </div>
     </LayoutPage>
   );

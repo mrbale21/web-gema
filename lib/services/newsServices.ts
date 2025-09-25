@@ -3,11 +3,15 @@ import { prisma } from "../prisma";
 export async function getAllNews() {
   return prisma.news.findMany({
     orderBy: { createdAt: "desc" },
+    include: { category: true }, // biar langsung ambil data kategori juga
   });
 }
 
 export async function getNewsById(id: number) {
-  return prisma.news.findUnique({ where: { id } });
+  return prisma.news.findUnique({
+    where: { id },
+    include: { category: true },
+  });
 }
 
 // Fungsi sederhana untuk slug
@@ -23,32 +27,48 @@ export async function createNews(
   content: string,
   image?: string,
   tag?: string,
-  editor?: string
+  editor?: string,
+  categoryId?: number,
+  visibility?: "HEADLINE" | "ALL" | "HIDDEN"
 ) {
-  const slug = generateSlug(title);
+  const slug = generateSlug(title || "untitled"); // amanin slug
   return prisma.news.create({
-    data: { title, content, slug, image, tag, editor },
+    data: {
+      title: title || "", // default string kosong
+      content: content || "", // default string kosong
+      slug,
+      image: image || null, // nullable
+      tag: tag || null,
+      editor: editor || null,
+      categoryId: categoryId ?? null,
+      visibility: visibility || "ALL",
+    },
   });
 }
 
 export async function updateMenu(
   id: number,
-  title: string,
-  content: string,
+  title?: string,
+  content?: string,
   image?: string,
   tag?: string,
-  editor?: string
+  editor?: string,
+  categoryId?: number,
+  visibility?: "HEADLINE" | "ALL" | "HIDDEN"
 ) {
   try {
     const updatedNews = await prisma.news.update({
       where: { id },
       data: {
-        title,
-        content,
-        image,
-        tag,
-        editor,
+        ...(title && { title }),
+        ...(content && { content }),
+        ...(image && { image }),
+        ...(tag && { tag }),
+        ...(editor && { editor }),
+        ...(categoryId && { categoryId }),
+        ...(visibility && { visibility }),
       },
+      include: { category: true }, // ⬅️ biar langsung return dengan kategori
     });
 
     return updatedNews;

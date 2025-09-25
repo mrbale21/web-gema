@@ -136,8 +136,7 @@ export default function FooterSection() {
 
       {/* Footer Bawah */}
       <div className="border-t border-white/40 text-center py-4 text-sm">
-        © {new Date().getFullYear()} {tenant.copyRight ?? tenant.nameTenant}.
-        All rights reserved.
+        {tenant.copyRight ?? tenant.nameTenant}. All rights reserved.
       </div>
     </footer>
   );

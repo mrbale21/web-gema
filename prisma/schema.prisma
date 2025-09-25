@@ -8,11 +8,14 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id                  String   @id @default(cuid())
+  email               String   @unique
+  password            String
+  name                String
+  verified            Boolean  @default(false)
+  verificationToken   String?
+  verificationExpires DateTime?
+  createdAt           DateTime @default(now())
 }
 
 model Attachment {
@@ -25,7 +28,6 @@ model Attachment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 model Menu {
   id        Int       @id @default(autoincrement())
@@ -41,23 +43,44 @@ model Submenu {
   title     String
   href      String?
   menuId    Int
+  icon      String?
   menu      Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model News {
-  id        Int      @id @default(autoincrement())
-  title     String
-  slug      String?  @unique
-  content   String
-  image     String?
-  tag       String?
-  editor    String?   
-  createdAt DateTime @default(now())
-
-  comments Comment[]
+model Category {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  slug    String? @unique
+  news    News[]
 }
+
+enum NewsVisibility {
+  HEADLINE
+  ALL
+  HIDDEN
+}
+
+model News {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String?   @unique
+  content     String
+  image       String?
+  tag         String?
+  editor      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt   
+
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
+
+  visibility  NewsVisibility? @default(ALL)
+
+  comments    Comment[]
+}
+
 
 model Comment {
   id        Int      @id @default(autoincrement())
@@ -85,6 +108,7 @@ model Tenant {
   address      String
   desc         String
   phone        String
+  phone2       String?
   email        String
   linkMaps     String?
   linkFacebook String?
@@ -97,13 +121,6 @@ model Tenant {
   updatedAt    DateTime @updatedAt
 }
 
-model Product {
-  id           Int     @id @default(autoincrement())
-  name         String
-  desc         String
-  link         String?
-  image        String?
-}
 
 model Superior {
   id           Int     @id @default(autoincrement())
@@ -213,78 +230,82 @@ model Principle {
   icon         String?
 }
 
-model GemaEdTech {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
+model Products {
+  id        Int     @id @default(autoincrement())
+  name      String
+  desc      String
+  link      String?
+  image     String?
+  slug      String   @unique
+  isActive  Boolean  @default(true)
+
+  titles      ProductTitle[]
+  subTitles   ProductSubTitle[]
+  superiors   ProductSuperior[]
+  types       ProductType[]
+  images      ProductImage[]
+  benefits    ProductBenefit[]
 }
 
-model GemaEdTechDetail {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
-  icon           String
+model ProductTitle {
+  id        Int     @id @default(autoincrement())
+  title     String
+  desc      String?
+  isActive  Boolean  @default(true)
+
+  productId Int?
+  product   Products? @relation(fields: [productId], references: [id])
 }
 
-model GemaKop {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
-  title1          String
-  desc1           String
+model ProductSubTitle {
+  id        Int     @id @default(autoincrement())
+  title     String
+  desc      String?
+  isActive  Boolean  @default(true)
+
+  productId Int?
+  product   Products? @relation(fields: [productId], references: [id])
 }
 
-model GemaKopDetail {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
-  icon           String
+model ProductSuperior {
+  id        Int     @id @default(autoincrement())
+  title     String
+  desc      String?
+  icon      String?
+  isActive  Boolean  @default(true)
+
+  productId Int?
+  product   Products? @relation(fields: [productId], references: [id])
 }
 
-model GemaUMKM {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
+model ProductType {
+  id        Int     @id @default(autoincrement())
+  title     String?
+  desc      String?
+  icon      String?
+  isActive  Boolean  @default(true)
+
+  productId Int?
+  product   Products? @relation(fields: [productId], references: [id])
 }
 
-model GemaImgUMKM {
+model ProductImage {
   id           Int     @id @default(autoincrement())
-  name         String
-  desc         String
+  name         String?
+  desc         String?
   image        String?
+  isActive     Boolean  @default(true)
+
+  productId Int?
+  product   Products? @relation(fields: [productId], references: [id])
 }
 
-model GemaUMKMDetail {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
-  icon           String
-}
+model ProductBenefit {
+  id        Int     @id @default(autoincrement())
+  slug      String? @unique
+  title     String
+  isActive  Boolean  @default(true)
 
-model Training {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
-  icon           String
-}
-
-model TrainingDetail {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
-  desc           String
-  icon           String
-}
-
-model TrainingBenefit {
-  id             Int        @id @default(autoincrement())
-  slug           String?    @unique
-  title          String
+  productId Int?
+  product   Products? @relation(fields: [productId], references: [id])
 }

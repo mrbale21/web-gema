@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { IoMdArrowRoundForward } from "react-icons/io";
@@ -6,13 +7,15 @@ import {
   MdOutlineArrowBackIos,
   MdOutlineArrowForwardIos,
 } from "react-icons/md";
-
-import ButtonPrimary from "../Common/ButtonPrimary";
+import { motion } from "framer-motion";
+import WhatsappButton from "../Common/WhatsAppButton";
 import { BannerType } from "@/types/banner";
+import { TenantType } from "@/types/tenant";
 
 export default function BannerSection() {
   const [allBanner, setAllBanner] = useState<BannerType[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [tenant, setTenant] = useState<TenantType | null>(null);
 
   const fetchBanner = async () => {
     const res = await fetch("/api/banner");
@@ -22,6 +25,12 @@ export default function BannerSection() {
 
   useEffect(() => {
     fetchBanner();
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/tenant")
+      .then((res) => res.json())
+      .then((data) => setTenant(data));
   }, []);
 
   const nextSlide = () => {
@@ -65,7 +74,22 @@ export default function BannerSection() {
               <p className="max-w-2xl text-lg md:text-xl mb-6">{desc}</p>
 
               <div className="flex items-center gap-4">
-                <ButtonPrimary href="#" label="Gabung Mitra" />
+                {tenant && (
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="inline-block"
+                  >
+                    <WhatsappButton
+                      phone={tenant?.phone2 || ""}
+                      message={`Halo ${tenant.nameTenant}, saya ingin menanyakan sesuatu.`}
+                      className="flex items-center bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-primary/90 transition text-center"
+                    >
+                      Hubungi Kami{" "}
+                      <IoMdArrowRoundForward className="ml-1 text-sm sm:text-xl group-hover:ml-0" />
+                    </WhatsappButton>
+                  </motion.div>
+                )}
+
                 <Link
                   href="/profile-page"
                   className="flex items-center font-bold text-sm group sm:text-lg gap-2 hover:underline hover:text-secondary"

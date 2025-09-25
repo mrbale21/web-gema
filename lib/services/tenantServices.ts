@@ -15,6 +15,7 @@ export async function updateTenant(
     address?: string;
     desc?: string;
     phone?: string;
+    phone2?: string;
     email?: string;
     linkMaps?: string;
     linkFacebook?: string;

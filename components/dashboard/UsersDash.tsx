@@ -181,12 +181,12 @@ export default function UsersDashboard() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Users Dashboard</h1>
+        <h1 className="text-3xl font-bold">Daftar Pengguna</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
         >
-          Tambah User
+          Tambah Pengguna
         </button>
       </div>
 

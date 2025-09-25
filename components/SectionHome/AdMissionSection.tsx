@@ -1,8 +1,18 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import ButtonPrimary from "../Common/ButtonPrimary";
+import WhatsappButton from "../Common/WhatsAppButton";
+import { TenantType } from "@/types/tenant";
 
 export default function AdmissionSection() {
+  const [tenant, setTenant] = useState<TenantType | null>(null);
+
+  useEffect(() => {
+    fetch("/api/tenant")
+      .then((res) => res.json())
+      .then((data) => setTenant(data));
+  }, []);
   return (
     <section className="bg-gradient-to-r from-primary to-primary py-20 px-4 flex justify-center">
       <div className="max-w-4xl w-full text-center text-white">
@@ -20,12 +30,16 @@ export default function AdmissionSection() {
 
         {/* Tombol Aksi */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
-            href="/kemitraan"
+          <WhatsappButton
+            phone={tenant?.phone2 || ""}
+            message={`Halo ${
+              tenant?.nameTenant || "Tenant"
+            }, saya ingin menanyakan sesuatu.`}
             className="bg-accent hover:bg-secondary text-primary font-semibold px-6 py-3 rounded-lg transition-colors"
           >
-            Gabung Mitra
-          </a>
+            Hubungi Kami
+          </WhatsappButton>
+
           <a
             href="/profil"
             className="bg-white hover:bg-gray-100 text-secondary font-semibold px-6 py-3 rounded-lg transition-colors"
@@ -36,7 +50,7 @@ export default function AdmissionSection() {
 
         {/* Info Kontak */}
         <p className="mt-6 text-sm text-gray-200">
-          Hubungi kami di <span className="font-semibold">0812-3456-7890</span>{" "}
+          Hubungi kami di <span className="font-semibold">{tenant?.phone}</span>{" "}
           untuk informasi lebih lanjut.
         </p>
       </div>

@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
+    const id = params.id;
     const user = await prisma.user.findUnique({
       where: { id },
       select: { id: true, name: true, email: true, createdAt: true },
@@ -27,7 +27,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
+    const id = params.id;
     const { name, email, password } = await req.json();
 
     const data: any = { name, email };
@@ -51,7 +51,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
+    const id = params.id;
     await prisma.user.delete({ where: { id } });
     return NextResponse.json({ message: "User deleted successfully" });
   } catch (err: any) {

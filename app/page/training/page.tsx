@@ -5,11 +5,14 @@ import { JSX, useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
 import DynamicIcon from "@/components/Common/DynamicIcon";
 import { Training, TrainingBenefit, TrainingDetail } from "@/types/training";
+import { TenantType } from "@/types/tenant";
+import WhatsappButton from "@/components/Common/WhatsAppButton";
 
 export default function GemaPelatihan() {
   const [training, setTraining] = useState<Training[]>([]);
   const [trainingdetail, setTrainingDetail] = useState<TrainingDetail[]>([]);
   const [trainingbenefit, setTrainingbenefit] = useState<TrainingBenefit[]>([]);
+  const [tenant, setTenant] = useState<TenantType | null>(null);
 
   useEffect(() => {
     fetch("/api/training/benefit")
@@ -33,12 +36,11 @@ export default function GemaPelatihan() {
       .then((data) => setTrainingDetail(data));
   }, []);
 
-  const benefits = [
-    "Akses jaringan mitra luas di berbagai sektor.",
-    "Dukungan penuh dari tim pelatihan Gema Nahdliyin.",
-    "Kesempatan kolaborasi dalam program pemberdayaan.",
-    "Promosi bersama untuk meningkatkan eksposur mitra.",
-  ];
+  useEffect(() => {
+    fetch("/api/tenant")
+      .then((res) => res.json())
+      .then((data) => setTenant(data));
+  }, []);
 
   return (
     <LayoutPage
@@ -139,13 +141,17 @@ export default function GemaPelatihan() {
 
       {/* Call to Action */}
       <div className="mt-16 text-center pb-20">
-        <motion.a
-          href="#"
-          whileHover={{ scale: 1.05 }}
-          className="inline-block bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-primary/90 transition"
-        >
-          Gabung Sebagai Mitra Pelatihan
-        </motion.a>
+        <motion.div whileHover={{ scale: 1.05 }} className="inline-block">
+          <WhatsappButton
+            phone={tenant?.phone2 || ""}
+            message={`Halo ${
+              tenant?.nameTenant || "Tenant"
+            }, saya ingin menanyakan sesuatu.`}
+            className="inline-block bg-primary text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-primary/90 transition text-center"
+          >
+            Hubungi Sekarang!
+          </WhatsappButton>
+        </motion.div>
       </div>
     </LayoutPage>
   );

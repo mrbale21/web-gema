@@ -58,9 +58,6 @@ export const menus = [
     label: "Lainnya",
     href: "#",
 
-    submenus: [
-      { label: "Videa App", href: "#", icon: FaVideo },
-      { label: "Quran Kemenag", href: "#", icon: FaQuran },
-    ],
+    submenus: [{ label: "Quran Kemenag", href: "#", icon: FaQuran }],
   },
 ];

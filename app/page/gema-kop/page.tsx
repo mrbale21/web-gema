@@ -4,10 +4,13 @@ import { useEffect, useState } from "react";
 import LayoutPage from "../layout-page";
 import DynamicIcon from "@/components/Common/DynamicIcon";
 import { GemaKop, GemaKopDetail } from "@/types/gemakop";
+import WhatsappButton from "@/components/Common/WhatsAppButton";
+import { TenantType } from "@/types/tenant";
 
 export default function GemaKoperasiPage() {
   const [gemakop, setGemakop] = useState<GemaKop | null>(null);
   const [gemakopdetail, setGemakopdetail] = useState<GemaKopDetail[]>([]);
+  const [tenant, setTenant] = useState<TenantType | null>(null);
 
   // ambil hanya 1 item utama
   useEffect(() => {
@@ -25,6 +28,12 @@ export default function GemaKoperasiPage() {
     fetch("/api/gemakop/detail")
       .then((res) => res.json())
       .then((data) => setGemakopdetail(data));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/tenant")
+      .then((res) => res.json())
+      .then((data) => setTenant(data));
   }, []);
 
   return (
@@ -84,12 +93,15 @@ export default function GemaKoperasiPage() {
             {gemakop?.title1}
           </h2>
           <p className="mb-6 text-lg">{gemakop?.desc1}</p>
-          <a
-            href="/daftar-koperasi"
+          <WhatsappButton
+            phone={tenant?.phone2 || ""}
+            message={`Halo ${
+              tenant?.nameTenant || "Tenant"
+            }, saya ingin menanyakan sesuatu.`}
             className="bg-white text-primary font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-100 transition"
           >
-            Daftar Sekarang
-          </a>
+            Hubungi Sekarang!
+          </WhatsappButton>
         </div>
       </section>
     </LayoutPage>

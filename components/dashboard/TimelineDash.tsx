@@ -179,12 +179,12 @@ export default function SuperDashboard() {
         )
       )}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Daftar Timeline</h1>
+        <h1 className="text-3xl font-bold">Daftar Sejarah Gema Nahdliyin</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
         >
-          Tambah Timeline
+          Tambah Data
         </button>
       </div>
 

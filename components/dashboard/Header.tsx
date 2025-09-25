@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Calendar, Bell, User, Menu } from "lucide-react";
+import { IoLogOutOutline } from "react-icons/io5";
 
 export default function Header({
   onToggleSidebar,
@@ -64,6 +65,16 @@ export default function Header({
               </p>
               <p className="text-xs text-gray-500">Administrator</p>
             </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                window.location.href = "/admin"; // redirect ke halaman login
+              }}
+              className="ml-2 text-red-500 text-sm font-semibold hover:text-red-700 transition-colors"
+            >
+              <IoLogOutOutline size={20} />
+            </button>
           </div>
         </div>
       </div>

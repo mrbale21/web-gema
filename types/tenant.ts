@@ -4,6 +4,7 @@ export interface TenantType {
   address?: string;
   desc?: string;
   phone?: string;
+  phone2?: string;
   email?: string;
   linkMaps?: string;
   linkFacebook?: string;

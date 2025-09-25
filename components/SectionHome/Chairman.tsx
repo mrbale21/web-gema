@@ -4,24 +4,10 @@ import { Award, Quote } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Loading from "../Common/Loading";
-
-interface ChairmanData {
-  id: number;
-  name: string;
-  title: string;
-  sub1: string;
-  sub2: string;
-  desc: string;
-  position: string;
-  city: string;
-  period: string;
-  ToS: string;
-  createdAt: string;
-  image?: string;
-}
+import { ChairmanType } from "@/types/chairman";
 
 export default function Chairman() {
-  const [chairman, setChairman] = useState<ChairmanData | null>(null);
+  const [chairman, setChairman] = useState<ChairmanType | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,7 +47,7 @@ export default function Chairman() {
 
               <div className="relative bg-primary rounded-2xl aspect-[3/4] flex items-center justify-center overflow-hidden">
                 <img
-                  src={chairman.image || "/default.jpg"}
+                  src={chairman.image || "/assets/images/placholder.png"}
                   alt={chairman.name}
                   className="object-cover"
                 />
@@ -112,7 +98,10 @@ export default function Chairman() {
                 </span>
               </p>
 
-              <p>{chairman.desc}</p>
+              <div
+                className="text-base text-justify"
+                dangerouslySetInnerHTML={{ __html: chairman.content || "" }}
+              />
 
               <p className="text-lg font-medium text-gray-900">
                 {chairman.sub2}

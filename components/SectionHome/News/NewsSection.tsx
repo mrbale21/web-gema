@@ -10,22 +10,19 @@ import { ArrowRight } from "lucide-react";
 import TextHeader from "@/components/Common/TextHeader";
 import ButtonReadMore from "@/components/Common/ButtonReadMore";
 import Loading from "@/components/Common/Loading";
+import { NewsType } from "@/types/news";
 
-interface News {
-  id: number;
-  title: string;
-  slug: string;
-  tag: string;
-  editor: string;
-  content: string;
-  image?: string | null;
-  createdAt: string;
-}
-
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 12;
 
 export default function NewsSection({ limit }: { limit?: number }) {
-  const [news, setNews] = useState<News[]>([]);
+  const [news, setNews] = useState<NewsType[]>([]);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
+    []
+  );
+  const [selectedCategory, setSelectedCategory] = useState<number | "all">(
+    "all"
+  );
+
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -42,7 +39,19 @@ export default function NewsSection({ limit }: { limit?: number }) {
         setLoading(false);
       }
     };
+
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        const data = await res.json();
+        setCategories(data);
+      } catch (err) {
+        console.error("Gagal fetch categories:", err);
+      }
+    };
+
     fetchNews();
+    fetchCategories();
   }, []);
 
   if (loading) {
@@ -53,12 +62,54 @@ export default function NewsSection({ limit }: { limit?: number }) {
     );
   }
 
-  const totalPages = Math.ceil(news.length / ITEMS_PER_PAGE);
+  // -------------------- FILTERING DATA --------------------
+  const visibleNews = news.filter((item) => item.visibility !== "HIDDEN");
 
-  const paginatedData = news.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  // Filter berdasarkan kategori kalau dipilih
+  const categoryFiltered =
+    selectedCategory === "all"
+      ? visibleNews
+      : visibleNews.filter((item) => item.categoryId === selectedCategory);
+
+  let displayedNews: NewsType[] = [];
+
+  if (limit) {
+    const headlines = categoryFiltered
+      .filter((item) => item.visibility === "HEADLINE")
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+
+    if (headlines.length >= limit) {
+      displayedNews = headlines.slice(0, limit);
+    } else {
+      const others = categoryFiltered
+        .filter((item) => item.visibility !== "HEADLINE")
+        .sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
+      displayedNews = [
+        ...headlines,
+        ...others.slice(0, limit - headlines.length),
+      ];
+    }
+  } else {
+    const sorted = [...categoryFiltered].sort((a, b) => {
+      if (a.visibility === "HEADLINE" && b.visibility !== "HEADLINE") return -1;
+      if (a.visibility !== "HEADLINE" && b.visibility === "HEADLINE") return 1;
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+
+    displayedNews = sorted.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    );
+  }
+  // --------------------------------------------------------
+
+  const totalPages = Math.ceil(categoryFiltered.length / ITEMS_PER_PAGE);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
@@ -70,19 +121,38 @@ export default function NewsSection({ limit }: { limit?: number }) {
 
   const goToPage = (page: number) => setCurrentPage(page);
 
-  // Data ditampilkan: limit kalau ada, kalau tidak pakai paginatedData
-  const displayedNews = limit ? news.slice(0, limit) : paginatedData;
-
   return (
-    <section className="py-16 bg-white pt-30">
-      <div className=" mx-auto px-4 md:px-8">
+    <section className="py-16 bg-white pt-20">
+      <div className="mx-auto px-4 md:px-8">
         {/* Heading */}
-        <div className="text-center mb-12">
+        <div className="text-center">
           <TextHeader
             title="Artikel | & Berita"
             desc="Update informasi terbaru dari Gema Nahdliyin Indonesia"
           />
         </div>
+
+        {/* Filter Kategori */}
+        {!limit && (
+          <div className="flex justify-center mb-8">
+            <select
+              value={selectedCategory}
+              onChange={(e) =>
+                setSelectedCategory(
+                  e.target.value === "all" ? "all" : Number(e.target.value)
+                )
+              }
+              className="border border-primary text-primary bg-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">Semua Kategori</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Tombol Selengkapnya (hanya muncul kalau ada limit) */}
         {limit && (
@@ -104,8 +174,13 @@ export default function NewsSection({ limit }: { limit?: number }) {
               <img
                 src={item.image || "no image"}
                 alt={item.title}
-                className="w-full h-56 object-cover object-center"
+                className="w-full h-56 object-cover object-center relative"
               />
+              <div className="absolute">
+                <div className="bg-primary m-3 px-2 rounded-lg text-sm text-white">
+                  {item.category?.name || "category"}
+                </div>
+              </div>
               <div className="p-5 flex flex-col flex-grow">
                 <span className="text-secondary text-sm font-semibold">
                   {new Date(item.createdAt).toLocaleDateString("id-ID", {
@@ -130,7 +205,7 @@ export default function NewsSection({ limit }: { limit?: number }) {
           ))}
         </div>
 
-        {/* Pagination hanya muncul kalau tidak ada limit */}
+        {/* Pagination */}
         {!limit && totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-2 mt-10">
             <button

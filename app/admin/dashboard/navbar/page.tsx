@@ -1,7 +1,7 @@
 "use client";
 
-import Placeholder from "@/components/dashboard/PlaceHolder";
+import MenuDashboard from "@/components/dashboard/MenuDash";
 
 export default function navbarDashboard() {
-  return <Placeholder title="Navbar" />;
+  return <MenuDashboard />;
 }

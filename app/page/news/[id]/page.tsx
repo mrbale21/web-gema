@@ -20,6 +20,9 @@ import { TenantType } from "@/types/tenant";
 import { NewsType } from "@/types/news";
 import { CommentType } from "@/types/comments";
 import Loading from "@/components/Common/Loading";
+import { FaUserAlt } from "react-icons/fa";
+import WhatsappButton from "@/components/Common/WhatsAppButton";
+import { filterBadWords } from "@/lib/filterBadwords";
 
 const NewsDetailPage = () => {
   const [comment, setComment] = useState<CommentType[]>([]);
@@ -77,13 +80,15 @@ const NewsDetailPage = () => {
     e.preventDefault();
     setError("");
 
+    const cleanComment = filterBadWords(content);
+
     try {
       const res = await fetch(`/api/news/${id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
-          comment: content, // isi komentar
+          comment: cleanComment,
           status,
         }),
       });
@@ -106,7 +111,7 @@ const NewsDetailPage = () => {
     }
   };
 
-  const [likes, setLikes] = useState(47);
+  const [likes, setLikes] = useState(10);
   const [isLiked, setIsLiked] = useState(false);
 
   const relatedNews = allNews
@@ -169,9 +174,11 @@ const NewsDetailPage = () => {
                     </div>
                   )}
                   <div className="absolute top-4 left-4">
-                    <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
-                      {news.tag}
-                    </span>
+                    {news.category?.name && (
+                      <span className="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
+                        {news.category.name || "Kategori"}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -205,8 +212,16 @@ const NewsDetailPage = () => {
                     />
                   </div>
 
+                  {/* Tag */}
+                  <div className="text-sm">
+                    Tag{" "}
+                    <span className="borde bg-gray-500 px-2 py-1 text-white rounded-lg ml-2">
+                      {news.tag}
+                    </span>{" "}
+                  </div>
+
                   {/* Social Actions */}
-                  <div className="flex flex-col gap-4 sm:flex-row items-center justify-between mt-8 pt-6 border-t">
+                  <div className="flex flex-col gap-4 sm:flex-row items-center justify-between pt-6 mt-6 border-t">
                     <div className="flex items-center space-x-4">
                       <button
                         onClick={handleLike}
@@ -283,7 +298,7 @@ const NewsDetailPage = () => {
                     <div key={comment.id} className="flex space-x-4">
                       <div className="flex-shrink-2">
                         <div className=" w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-medium text-sm">
-                          <FaPersonRifle />
+                          <FaUserAlt size={16} />
                         </div>
                       </div>
                       <div className="flex-1">
@@ -334,15 +349,17 @@ const NewsDetailPage = () => {
                     <div className="flex space-x-4">
                       <div className="flex-shrink-0">
                         <img
-                          src={news.image}
+                          src={news.image ?? "No Image"}
                           alt={news.title}
                           className="w-20 h-20 object-cover rounded-lg group-hover:opacity-80 transition-opacity"
                         />
                       </div>
                       <div className="flex-1">
-                        <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full mb-2">
-                          {news.tag}
-                        </span>
+                        {news.category?.name && (
+                          <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full mb-2">
+                            {news.category.name || "Kategori"}
+                          </span>
+                        )}
                         <h4 className="font-medium text-gray-900 group-hover:text-secondary transition-colors line-clamp-2 mb-2">
                           {news.title}
                         </h4>
@@ -390,9 +407,15 @@ const NewsDetailPage = () => {
                     {allTenant.email}
                   </div>
                 </div>
-                <button className="w-full mt-4 bg-white hover:bg-secondary hover:text-white text-primary py-2 rounded-lg font-medium transition-colors">
+                <WhatsappButton
+                  phone={allTenant?.phone2 || ""}
+                  message={`Halo ${
+                    allTenant?.nameTenant || "Tenant"
+                  }, saya ingin menanyakan sesuatu.`}
+                  className="w-full mt-4 bg-white hover:bg-secondary hover:text-white text-primary py-2 rounded-lg font-medium transition-colors"
+                >
                   Hubungi Kami
-                </button>
+                </WhatsappButton>
               </div>
             )}
           </div>

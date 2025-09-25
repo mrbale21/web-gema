@@ -9,6 +9,7 @@ interface Tenant {
   address?: string;
   desc?: string;
   phone?: string;
+  phone2?: string;
   email?: string;
   linkMaps?: string;
   linkFacebook?: string;
@@ -25,6 +26,7 @@ const LABELS: Record<keyof Tenant, string> = {
   address: "Alamat",
   desc: "Deskripsi",
   phone: "Telepon",
+  phone2: "Telepon 2",
   email: "Email",
   linkMaps: "Link Maps",
   linkFacebook: "Facebook",

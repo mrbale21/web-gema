@@ -1,52 +1,72 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createUser, validateUser } from "@/lib/services/userServices";
-import { SignJWT } from "jose";
-
-const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET || "supersecretkey"
-);
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import { sendVerificationPIN } from "@/lib/senEmail";
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { type, email, password, name } = body;
+  const { type, email, password, name } = await req.json();
 
-  try {
-    if (type === "register") {
-      const user = await createUser(email, password, name);
-      return NextResponse.json({ user });
-    }
+  // REGISTER
+  if (type === "register") {
+    const exist = await prisma.user.findUnique({ where: { email } });
+    if (exist)
+      return NextResponse.json(
+        { error: "Email sudah terdaftar" },
+        { status: 400 }
+      );
 
-    if (type === "login") {
-      const user = await validateUser(email, password);
-      if (!user) {
-        return NextResponse.json(
-          { error: "Invalid credentials" },
-          { status: 401 }
-        );
-      }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const pin = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit PIN
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 jam
 
-      // 🔑 generate JWT dengan jose
-      const token = await new SignJWT({ id: user.id, email: user.email })
-        .setProtectedHeader({ alg: "HS256" })
-        .setExpirationTime("1h")
-        .sign(SECRET_KEY);
+    await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        verified: false,
+        verificationToken: pin,
+        verificationExpires: expires,
+      },
+    });
 
-      const response = NextResponse.json({ user });
+    await sendVerificationPIN(email, pin);
 
-      // simpan token di cookie HttpOnly
-      response.cookies.set("token", token, {
-        httpOnly: true,
-        path: "/",
-        maxAge: 60 * 60, // 1 jam
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production", // hanya https kalau production
-      });
-
-      return response;
-    }
-
-    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({
+      success: true,
+      message: "Registrasi berhasil. Silakan cek email untuk PIN verifikasi.",
+    });
   }
+
+  // LOGIN
+  if (type === "login") {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      );
+    }
+
+    if (!user.verified) {
+      return NextResponse.json(
+        { error: "Email belum diverifikasi. Silakan cek PIN." },
+        { status: 403 }
+      );
+    }
+
+    // Buat token jika mau pakai JWT atau bisa langsung return user
+    return NextResponse.json({ success: true, user });
+  }
+
+  return NextResponse.json({ error: "Invalid type" }, { status: 400 });
 }

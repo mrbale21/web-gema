@@ -163,7 +163,7 @@ export default function SuperiorDashboard() {
         )
       )}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Keunggulan Gemanahdliyin</h1>
+        <h1 className="text-3xl font-bold">Keunggulan Gema Nahdliyin</h1>
         <button
           onClick={() => setAddModal(true)}
           className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"

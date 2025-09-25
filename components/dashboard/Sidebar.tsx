@@ -1,113 +1,35 @@
 "use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Home,
-  FileText,
-  Users,
-  Settings,
+  Package,
+  Store,
   ChevronDown,
   ChevronRight,
   X,
-  Image,
   LayoutPanelLeft,
-  Newspaper,
-  Package,
+  Image,
   UserCircle,
   BarChart3,
   Handshake,
   Star,
-  Camera,
   BookOpen,
   Target,
   HeartHandshake,
+  Newspaper,
+  Camera,
   Info,
-  Layers3,
-  GraduationCap,
-  Store,
-  ClipboardList,
+  MessageSquareText,
+  ChartColumnStacked,
 } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 
-const navItems = [
-  { id: "/admin/dashboard", label: "Dashboard", icon: Home },
-  {
-    id: "head",
-    label: "Header",
-    icon: LayoutPanelLeft,
-    children: [
-      { id: "/admin/dashboard/navbar", label: "Navbar", icon: LayoutPanelLeft },
-      { id: "/admin/dashboard/banner", label: "Banner", icon: Image },
-    ],
-  },
-  {
-    id: "posts",
-    label: "Beranda",
-    icon: Home,
-    children: [
-      { id: "/admin/dashboard/product", label: "Produk", icon: Package },
-      {
-        id: "/admin/dashboard/chairman",
-        label: "Ketua Umum",
-        icon: UserCircle,
-      },
-      { id: "/admin/dashboard/statistic", label: "Statistik", icon: BarChart3 },
-      { id: "/admin/dashboard/partner", label: "Partner", icon: Handshake },
-      { id: "/admin/dashboard/superior", label: "Keunggulan", icon: Star },
-    ],
-  },
-  {
-    id: "profile",
-    label: "Profil",
-    icon: UserCircle,
-    children: [
-      { id: "/admin/dashboard/timeline", label: "Sejarah", icon: BookOpen },
-      { id: "/admin/dashboard/visi-misi", label: "Visi Misi", icon: Target },
-      { id: "/admin/dashboard/program", label: "Program", icon: FileText },
-      {
-        id: "/admin/dashboard/principle",
-        label: "Nilai & Prinsip",
-        icon: HeartHandshake,
-      },
-    ],
-  },
-  {
-    id: "product",
-    label: "Produk",
-    icon: Store,
-    children: [
-      {
-        id: "/admin/dashboard/gemakop",
-        label: "GemaKOP",
-        icon: Layers3,
-      },
-      {
-        id: "/admin/dashboard/gemaedtech",
-        label: "GemaEdTech",
-        icon: GraduationCap,
-      },
-      {
-        id: "/admin/dashboard/gemaumkm",
-        label: "GemaUMKM",
-        icon: Store,
-      },
-      {
-        id: "/admin/dashboard/training",
-        label: "Pelatihan",
-        icon: ClipboardList,
-      },
-    ],
-  },
-  { id: "/admin/dashboard/news", label: "Blog", icon: Newspaper },
-  {
-    id: "/admin/dashboard/documentasi",
-    label: "Dokumentasi",
-    icon: Camera,
-  },
-  { id: "/admin/dashboard/users", label: "Pengguna", icon: Users },
-  { id: "/admin/dashboard/tenant", label: "Informasi", icon: Info },
-  // { id: "/admin/dashboard/settings", label: "Settings", icon: Settings },
-];
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+}
 
 export default function Sidebar({
   isOpen,
@@ -117,7 +39,17 @@ export default function Sidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const [products, setProducts] = useState<Product[]>([]);
   const [openMenus, setOpenMenus] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+      setProducts(data);
+    };
+    fetchProducts();
+  }, []);
 
   const toggleMenu = (id: string) => {
     setOpenMenus((prev) =>
@@ -127,7 +59,6 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Overlay di mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -135,12 +66,10 @@ export default function Sidebar({
         />
       )}
 
-      {/* Sidebar */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg border-r border-gray-100 z-50 transform transition-transform duration-200 
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
-        {/* Header Sidebar */}
         <div className="p-6 border-b border-gray-100 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">CMS Dashboard</h1>
           <button
@@ -151,74 +80,252 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Menu */}
-        <nav className="p-4 overflow-y-auto h-[calc(100%-80px)]">
+        <nav className="p-4 overflow-y-auto h-[calc(100%-80px)] text-gray-700">
           <ul className="space-y-2">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const hasChildren = item.children && item.children.length > 0;
-              const isMenuOpen = openMenus.includes(item.id);
+            {/* Dashboard */}
+            <li>
+              <Link
+                href="/admin/dashboard/products"
+                className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+                  pathname === "/admin/dashboard"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+                onClick={onClose}
+              >
+                <Home className="h-5 w-5 mr-3" />
+                <span className="font-medium">Dashboard</span>
+              </Link>
+            </li>
 
-              return (
-                <li key={item.id}>
-                  {!hasChildren ? (
+            {/* Header */}
+            <li>
+              <button
+                onClick={() => toggleMenu("header")}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="flex items-center space-x-3">
+                  <LayoutPanelLeft className="h-5 w-5" />
+                  <span className="font-medium">Header</span>
+                </div>
+                {openMenus.includes("header") ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+              {openMenus.includes("header") && (
+                <ul className="mt-1 ml-6 space-y-1">
+                  <li>
                     <Link
-                      href={item.id}
-                      className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors cursor-pointer ${
-                        pathname === item.id
-                          ? "bg-blue-50 text-blue-700 border border-blue-200"
-                          : "text-gray-700 hover:bg-gray-100"
-                      }`}
-                      onClick={onClose} // 🔥 tutup sidebar kalau klik menu (di mobile)
+                      href="/admin/dashboard/navbar"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
                     >
-                      <Icon className="h-5 w-5 mr-3" />
-                      <span className="font-medium">{item.label}</span>
+                      <LayoutPanelLeft className="h-4 w-4 mr-2" />
+                      Navbar
                     </Link>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => toggleMenu(item.id)}
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <Icon className="h-5 w-5" />
-                          <span className="font-medium">{item.label}</span>
-                        </div>
-                        {isMenuOpen ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
-                      </button>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/dashboard/banner"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <Image className="h-4 w-4 mr-2" />
+                      Banner
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
 
-                      {isMenuOpen && (
-                        <ul className="mt-1 ml-6 space-y-1">
-                          {item.children.map((child) => {
-                            const ChildIcon = child.icon;
-                            return (
-                              <li key={child.id}>
-                                <Link
-                                  href={child.id}
-                                  className={`w-full flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
-                                    pathname === child.id
-                                      ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                      : "text-gray-600 hover:bg-gray-100"
-                                  }`}
-                                  onClick={onClose} // 🔥 tutup sidebar kalau klik submenu
-                                >
-                                  <ChildIcon className="h-4 w-4 mr-2" />
-                                  <span className="text-sm">{child.label}</span>
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </>
-                  )}
-                </li>
-              );
-            })}
+            {/* Produk (Dynamic dari DB) */}
+            <li>
+              <button
+                onClick={() => toggleMenu("products")}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="flex items-center space-x-3">
+                  <Store className="h-5 w-5" />
+                  <span className="font-medium">Produk</span>
+                </div>
+                {openMenus.includes("products") ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+
+              {openMenus.includes("products") && (
+                <ul className="mt-1 ml-6 space-y-1">
+                  <li>
+                    <Link
+                      href="/admin/dashboard/product"
+                      className="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Data Produk
+                    </Link>
+                  </li>
+                  {products.map((product) => (
+                    <li key={product.id}>
+                      <Link
+                        href={`/admin/dashboard/products/${product.slug}`}
+                        className={`w-full flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                          pathname.includes(product.slug)
+                            ? "bg-blue-50 text-blue-700 border border-blue-200"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                        onClick={onClose}
+                      >
+                        <Package className="h-4 w-4 mr-2" />
+                        <span className="font-medium">{product.name}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+
+            {/* Profil */}
+            <li>
+              <button
+                onClick={() => toggleMenu("profile")}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="flex items-center space-x-3">
+                  <UserCircle className="h-5 w-5" />
+                  <span className="font-medium">Profil</span>
+                </div>
+                {openMenus.includes("profile") ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+              {openMenus.includes("profile") && (
+                <ul className="mt-1 ml-6 space-y-1">
+                  <li>
+                    <Link
+                      href="/admin/dashboard/timeline"
+                      className="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Sejarah
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/dashboard/visi-misi"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <Target className="h-4 w-4 mr-2" />
+                      Visi Misi
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/dashboard/program"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Program
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/dashboard/principle"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <HeartHandshake className="h-4 w-4 mr-2" />
+                      Nilai & Prinsip
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Blog */}
+            <li>
+              <button
+                onClick={() => toggleMenu("blog")}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer"
+              >
+                <div className="flex items-center space-x-3">
+                  <Newspaper className="h-5 w-5" />
+                  <span className="font-medium">Blog</span>
+                </div>
+                {openMenus.includes("blog") ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+              {openMenus.includes("blog") && (
+                <ul className="mt-1 ml-6 space-y-1">
+                  <li>
+                    <Link
+                      href="/admin/dashboard/news"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <Newspaper className="h-4 w-4 mr-2" />
+                      Data Blog
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/dashboard/categories"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <ChartColumnStacked className="h-4 w-4 mr-2" />
+                      Kategori
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/dashboard/comment"
+                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      onClick={onClose}
+                    >
+                      <MessageSquareText className="h-4 w-4 mr-2" />
+                      Komentar
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Dokumentasi */}
+            <li>
+              <Link
+                href="/admin/dashboard/documentasi"
+                className="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100"
+                onClick={onClose}
+              >
+                <Camera className="h-5 w-5 mr-3" />
+                Dokumentasi
+              </Link>
+            </li>
+
+            {/* Informasi */}
+            <li>
+              <Link
+                href="/admin/dashboard/tenant"
+                className="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100"
+                onClick={onClose}
+              >
+                <Info className="h-5 w-5 mr-3" />
+                Informasi
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>
