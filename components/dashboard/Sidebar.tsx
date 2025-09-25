@@ -23,6 +23,7 @@ import {
   Info,
   MessageSquareText,
   ChartColumnStacked,
+  ScrollText,
 } from "lucide-react";
 
 interface Product {
@@ -41,6 +42,11 @@ export default function Sidebar({
   const pathname = usePathname();
   const [products, setProducts] = useState<Product[]>([]);
   const [openMenus, setOpenMenus] = useState<string[]>([]);
+  const isActive = (path: string) =>
+    pathname === path || pathname.startsWith(path);
+  const isExactActive = (path: string) => pathname === path;
+  const isStartsWithActive = (path: string) =>
+    pathname === path || pathname.startsWith(path + "/");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -119,7 +125,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/navbar"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/navbar")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <LayoutPanelLeft className="h-4 w-4 mr-2" />
@@ -129,11 +139,29 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/banner"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isExactActive("/admin/dashboard/banner")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <Image className="h-4 w-4 mr-2" />
                       Banner
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/dashboard/bannerpage"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isExactActive("/admin/dashboard/bannerpage")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                      onClick={onClose}
+                    >
+                      <Image className="h-4 w-4 mr-2" />
+                      Banner Page
                     </Link>
                   </li>
                 </ul>
@@ -162,10 +190,14 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/product"
-                      className="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isExactActive("/admin/dashboard/product")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
-                      <BookOpen className="h-4 w-4 mr-2" />
+                      <ScrollText className="h-4 w-4 mr-2" />
                       Data Produk
                     </Link>
                   </li>
@@ -174,8 +206,10 @@ export default function Sidebar({
                       <Link
                         href={`/admin/dashboard/products/${product.slug}`}
                         className={`w-full flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
-                          pathname.includes(product.slug)
-                            ? "bg-blue-50 text-blue-700 border border-blue-200"
+                          isExactActive(
+                            `/admin/dashboard/products/${product.slug}`
+                          )
+                            ? "bg-primary/10 text-primary/80 border border-primary/50"
                             : "text-gray-600 hover:bg-gray-100"
                         }`}
                         onClick={onClose}
@@ -210,7 +244,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/timeline"
-                      className="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/timeline")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <BookOpen className="h-4 w-4 mr-2" />
@@ -220,7 +258,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/visi-misi"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/visi-misi")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <Target className="h-4 w-4 mr-2" />
@@ -230,7 +272,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/program"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/program")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <BarChart3 className="h-4 w-4 mr-2" />
@@ -240,7 +286,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/principle"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/principle")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <HeartHandshake className="h-4 w-4 mr-2" />
@@ -272,7 +322,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/news"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/news")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <Newspaper className="h-4 w-4 mr-2" />
@@ -282,7 +336,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/categories"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/categories")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <ChartColumnStacked className="h-4 w-4 mr-2" />
@@ -292,7 +350,11 @@ export default function Sidebar({
                   <li>
                     <Link
                       href="/admin/dashboard/comment"
-                      className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                        isActive("/admin/dashboard/comment")
+                          ? "bg-primary/10 text-primary/80 border border-primary/50"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
                       onClick={onClose}
                     >
                       <MessageSquareText className="h-4 w-4 mr-2" />
@@ -307,7 +369,11 @@ export default function Sidebar({
             <li>
               <Link
                 href="/admin/dashboard/documentasi"
-                className="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100"
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                  isActive("/admin/dashboard/documentasi")
+                    ? "bg-primary/10 text-primary/80 border border-primary/50"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
                 onClick={onClose}
               >
                 <Camera className="h-5 w-5 mr-3" />
@@ -319,7 +385,11 @@ export default function Sidebar({
             <li>
               <Link
                 href="/admin/dashboard/tenant"
-                className="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100"
+                className={`flex items-center px-4 py-2 rounded-lg transition-colors cursor-pointer ${
+                  isActive("/admin/dashboard/tenant")
+                    ? "bg-primary/10 text-primary/80 border border-primary/50"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
                 onClick={onClose}
               >
                 <Info className="h-5 w-5 mr-3" />

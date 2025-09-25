@@ -13,7 +13,7 @@ import Alert from "@/components/Common/Alert";
 
 export default function NewsListPage() {
   const [news, setNews] = useState<NewsType[]>([]);
-  const [categoryFilter, setCategoryFilter] = useState<string>(""); // filter kategori
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
   const router = useRouter();
 
   const [alert, setAlert] = useState<{
@@ -146,7 +146,7 @@ export default function NewsListPage() {
       )}
 
       <div className="flex justify-between gap-4 items-center mb-6">
-        <h1 className="text-gray-900 font-bold text-xl">Data Berita</h1>
+        <h1 className="text-gray-900 font-bold text-2xl">Berita</h1>
         <div className="flex gap-2">
           {/* Dropdown Filter Kategori */}
           {categories.length > 0 && (

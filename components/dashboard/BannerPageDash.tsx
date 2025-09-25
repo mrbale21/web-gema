@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, ChangeEvent } from "react";
-import { BannerType } from "@/types/banner";
+import { BannerPageType } from "@/types/bannerpage";
 import Alert from "../Common/Alert";
 import ConfirmAlert from "../Common/ConfirmAlert";
 
@@ -37,34 +37,26 @@ const Modal: React.FC<{
   );
 };
 
-// === Banner Modal (Tambah / Edit) ===
-const BannerModal: React.FC<{
+// === BannerPage Modal (Tambah / Edit) ===
+const BannerPageModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
-  title: string;
-  setTitle: (val: string) => void;
-  subTitle: string;
-  setSubTitle: (val: string) => void;
-  desc: string;
-  setDesc: (val: string) => void;
+  name: string;
+  setName: (val: string) => void;
   imageFile: File | null;
   setImageFile: (file: File | null) => void;
   preview: string | null;
   setPreview: (val: string | null) => void;
   isEdit: boolean;
-  currentBanner?: BannerType | null;
+  currentBanner?: BannerPageType | null;
   error?: string;
 }> = ({
   isOpen,
   onClose,
   onSubmit,
-  title,
-  setTitle,
-  subTitle,
-  setSubTitle,
-  desc,
-  setDesc,
+  name,
+  setName,
   imageFile,
   setImageFile,
   preview,
@@ -99,23 +91,8 @@ const BannerModal: React.FC<{
         <input
           type="text"
           placeholder="Judul"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          className="w-full border rounded-lg p-3"
-        />
-        <input
-          type="text"
-          placeholder="Sub Judul"
-          value={subTitle}
-          onChange={(e) => setSubTitle(e.target.value)}
-          required
-          className="w-full border rounded-lg p-3"
-        />
-        <textarea
-          placeholder="Deskripsi"
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
           className="w-full border rounded-lg p-3"
         />
@@ -165,29 +142,28 @@ const BannerModal: React.FC<{
 };
 
 // === MAIN PAGE ===
-export default function BannerPage() {
-  const [Banner, setBanner] = useState<BannerType[]>([]);
+export default function BannerPagePage() {
+  const [bannerPage, setBannerPage] = useState<BannerPageType[]>([]);
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
-  const [selectedBanner, setSelectedBanner] = useState<BannerType | null>(null);
+  const [selectedBannerPage, setSelectedBannerPage] =
+    useState<BannerPageType | null>(null);
 
-  const [title, setTitle] = useState("");
-  const [subTitle, setSubTitle] = useState("");
-  const [desc, setDesc] = useState("");
+  const [name, setName] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const [alert, setAlert] = useState<any>(null);
 
-  const fetchBanner = async () => {
-    const res = await fetch("/api/banner");
+  const fetchBannerPage = async () => {
+    const res = await fetch("/api/bannerpage");
     const data = await res.json();
-    setBanner(data);
+    setBannerPage(data);
   };
 
   useEffect(() => {
-    fetchBanner();
+    fetchBannerPage();
   }, []);
 
   // === ADD ===
@@ -195,13 +171,11 @@ export default function BannerPage() {
     e.preventDefault();
     setError("");
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("subTitle", subTitle);
-    formData.append("desc", desc);
+    formData.append("name", name);
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      const res = await fetch("/api/banner", {
+      const res = await fetch("/api/bannerpage", {
         method: "POST",
         body: formData,
       });
@@ -212,7 +186,7 @@ export default function BannerPage() {
       }
       setAddModal(false);
       resetForm();
-      fetchBanner();
+      fetchBannerPage();
       setAlert({ type: "success", message: "Data berhasil ditambahkan!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
@@ -222,15 +196,13 @@ export default function BannerPage() {
   // === UPDATE ===
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBanner) return;
+    if (!selectedBannerPage) return;
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("subTitle", subTitle);
-    formData.append("desc", desc);
+    formData.append("name", name);
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      const res = await fetch(`/api/banner/${selectedBanner.id}`, {
+      const res = await fetch(`/api/bannerpage/${selectedBannerPage.id}`, {
         method: "PUT",
         body: formData,
       });
@@ -241,7 +213,7 @@ export default function BannerPage() {
       }
       setEditModal(false);
       resetForm();
-      fetchBanner();
+      fetchBannerPage();
       setAlert({ type: "success", message: "Data berhasil diperbarui!" });
     } catch (err: any) {
       setError(err.message || "Something went wrong");
@@ -257,7 +229,7 @@ export default function BannerPage() {
       onConfirm: async () => {
         setAlert(null);
         try {
-          const res = await fetch(`/api/banner/${id}`, {
+          const res = await fetch(`/api/bannerpage/${id}`, {
             method: "DELETE",
           });
           const data = await res.json();
@@ -269,7 +241,7 @@ export default function BannerPage() {
             });
             return;
           }
-          fetchBanner();
+          fetchBannerPage();
           setAlert({
             type: "success",
             message: "data berhasil dihapus!",
@@ -288,12 +260,10 @@ export default function BannerPage() {
   };
 
   const resetForm = () => {
-    setTitle("");
-    setSubTitle("");
-    setDesc("");
+    setName("");
     setImageFile(null);
     setPreview(null);
-    setSelectedBanner(null);
+    setSelectedBannerPage(null);
     setError("");
   };
 
@@ -320,18 +290,26 @@ export default function BannerPage() {
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Banner</h1>
+        <h1 className="text-3xl font-bold">Banner Page</h1>
         <button
-          onClick={() => setAddModal(true)}
-          className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary/90"
+          onClick={() => {
+            resetForm();
+            setAddModal(true);
+          }}
+          disabled={bannerPage.length > 0}
+          className={`py-2 px-4 rounded-lg text-white ${
+            bannerPage.length > 0
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-primary hover:bg-primary/90"
+          }`}
         >
-          Tambah Banner
+          Tambah Data
         </button>
       </div>
 
       {/* LIST */}
       <div className="space-y-6">
-        {Banner.map((item) => (
+        {bannerPage.map((item) => (
           <div
             key={item.id}
             className="flex items-start gap-4 p-4 bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-300"
@@ -340,7 +318,7 @@ export default function BannerPage() {
               {item.image ? (
                 <img
                   src={item.image}
-                  alt={item.title}
+                  alt={item.name}
                   className="object-cover w-full h-full"
                 />
               ) : (
@@ -351,22 +329,12 @@ export default function BannerPage() {
             </div>
 
             <div className="flex-1 flex flex-col gap-1">
-              <h2 className="text-lg font-semibold text-black">{item.title}</h2>
-              {item.subtitle && (
-                <h3 className="text-sm text-gray-600">{item.subtitle}</h3>
-              )}
-              {item.desc && (
-                <p className="text-sm text-gray-700 line-clamp-3">
-                  {item.desc}
-                </p>
-              )}
+              <h2 className="text-lg font-semibold text-black">{item.name}</h2>
               <div className="mt-2 flex gap-2 text-sm">
                 <button
                   onClick={() => {
-                    setSelectedBanner(item);
-                    setTitle(item.title);
-                    setSubTitle(item.subtitle);
-                    setDesc(item.desc);
+                    setSelectedBannerPage(item);
+                    setName(item.name);
                     setPreview(item.image ?? "");
                     setEditModal(true);
                   }}
@@ -387,16 +355,12 @@ export default function BannerPage() {
       </div>
 
       {/* MODAL Tambah */}
-      <BannerModal
+      <BannerPageModal
         isOpen={addModal}
         onClose={() => setAddModal(false)}
         onSubmit={handleSubmit}
-        title={title}
-        setTitle={setTitle}
-        subTitle={subTitle}
-        setSubTitle={setSubTitle}
-        desc={desc}
-        setDesc={setDesc}
+        name={name}
+        setName={setName}
         imageFile={imageFile}
         setImageFile={setImageFile}
         preview={preview}
@@ -406,22 +370,18 @@ export default function BannerPage() {
       />
 
       {/* MODAL Edit */}
-      <BannerModal
+      <BannerPageModal
         isOpen={editModal}
         onClose={() => setEditModal(false)}
         onSubmit={handleUpdate}
-        title={title}
-        setTitle={setTitle}
-        subTitle={subTitle}
-        setSubTitle={setSubTitle}
-        desc={desc}
-        setDesc={setDesc}
+        name={name}
+        setName={setName}
         imageFile={imageFile}
         setImageFile={setImageFile}
         preview={preview}
         setPreview={setPreview}
         isEdit={true}
-        currentBanner={selectedBanner}
+        currentBanner={selectedBannerPage}
         error={error}
       />
     </div>

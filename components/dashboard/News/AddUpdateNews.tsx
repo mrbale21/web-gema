@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BlogTextEditor from "@/components/Common/TextEditor";
-import ConfirmAlert from "@/components/Common/ConfirmAlert";
-import Alert from "@/components/Common/Alert";
 
 type CategoryType = {
   id: number;
@@ -18,7 +16,8 @@ export default function AddNewsPage() {
   const [tag, setTag] = useState("");
   const [editor, setEditor] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [categoryId, setCategoryId] = useState<number | null>(null); // kategori
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<CategoryType[]>([]);
 
   const [error, setError] = useState("");
@@ -26,8 +25,6 @@ export default function AddNewsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-
-  const [alert, setAlert] = useState<any>(null);
 
   // ambil kategori
   useEffect(() => {
@@ -47,12 +44,25 @@ export default function AddNewsPage() {
           setTag(data.tag);
           setEditor(data.editor);
           setCategoryId(data.categoryId || null);
+          if (data.image) {
+            setImagePreview(data.image);
+          }
           setMounted(true);
         });
     } else {
       setMounted(true);
     }
   }, [id]);
+
+  // handle pilih gambar
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setImageFile(file);
+
+    if (file) {
+      setImagePreview(URL.createObjectURL(file)); // preview langsung
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,13 +88,6 @@ export default function AddNewsPage() {
         return;
       }
 
-      setAlert({
-        type: "success",
-        message: id
-          ? "Berita berhasil diupdate"
-          : "Berita berhasil ditambahkan",
-      });
-
       router.push("/admin/dashboard/news");
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
@@ -95,7 +98,6 @@ export default function AddNewsPage() {
 
   return (
     <div className="min-h-screen p-6 bg-gray-50">
-      {/* form berita */}
       <div className="max-w-3xl mx-auto">
         <form
           onSubmit={handleSubmit}
@@ -135,7 +137,7 @@ export default function AddNewsPage() {
               value={categoryId ?? ""}
               onChange={(e) => setCategoryId(Number(e.target.value))}
               required
-              className="w-full border rounded-lg p-3  text-gray-800"
+              className="w-full border rounded-lg p-3 text-gray-800"
             >
               <option value="">-- Pilih Kategori --</option>
               {categories.map((cat) => (
@@ -153,19 +155,19 @@ export default function AddNewsPage() {
               placeholder="Tag"
               value={tag}
               onChange={(e) => setTag(e.target.value)}
-              className="border p-3 rounded-lg  text-gray-800"
+              className="border p-3 rounded-lg text-gray-800"
             />
             <input
               type="text"
               placeholder="Editor"
               value={editor}
               onChange={(e) => setEditor(e.target.value)}
-              className="border p-3 rounded-lg  text-gray-800"
+              className="border p-3 rounded-lg text-gray-800"
               required
             />
           </div>
 
-          {/* Upload Gambar */}
+          {/* Upload Gambar + Preview */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Gambar
@@ -173,9 +175,22 @@ export default function AddNewsPage() {
             <input
               type="file"
               accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-              className="  text-gray-700"
+              onChange={handleImageChange}
+              className="text-gray-700 border border-gray-700 py-1 px-2 rounded-lg"
             />
+
+            {imagePreview && (
+              <div className="mt-4 relative w-full h-48 rounded-lg overflow-hidden border">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute inset-0 bg-black/10 hover:bg-black/20 transition flex items-center justify-center text-white text-sm opacity-0 hover:opacity-100">
+                  Preview Gambar
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
@@ -189,7 +204,7 @@ export default function AddNewsPage() {
             <button
               type="button"
               onClick={() => router.push("/admin/dashboard/news")}
-              className="border px-6 py-2 rounded-lg  text-gray-600 hover:bg-gray-200"
+              className="border px-6 py-2 rounded-lg text-gray-600 hover:bg-gray-200"
             >
               Batal
             </button>

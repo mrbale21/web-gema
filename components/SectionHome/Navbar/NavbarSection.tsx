@@ -10,6 +10,7 @@ import MenuDropdown from "./MenuDropdown";
 import { Product } from "@/types/products";
 import { Package } from "lucide-react"; // icon default
 import Loading from "@/components/Common/Loading";
+import { usePathname } from "next/navigation";
 
 interface MenuItem {
   id: number;
@@ -33,6 +34,7 @@ const getIcon = (iconName?: string, size: number = 18) => {
 };
 
 export default function NavbarSection() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeSubIndex, setActiveSubIndex] = useState<number | null>(null);
@@ -103,6 +105,11 @@ export default function NavbarSection() {
     setIsOpen(false); // Tutup mobile menu setelah klik
   };
 
+  const isActive = (href?: string) => {
+    if (!href) return false;
+    return pathname === href; // exact match
+  };
+
   if (loading) return <Loading type="spinner" text="Memuat Menu..." />;
   if (error) return <Loading type="spinner" text="Data Tidak Ditemukan!" />;
 
@@ -125,7 +132,7 @@ export default function NavbarSection() {
         {/* DESKTOP NAV */}
         <nav className="z-50 absolute hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 lg:block">
           <ul className="navbar flex flex-col justify-center font-chivo gap-[34px] lg:flex-row">
-            {menus.map((menu, index) =>
+            {menus.map((menu) =>
               menu.submenus && menu.submenus.length > 0 ? (
                 <MenuDropdown
                   key={menu.id}
@@ -134,7 +141,8 @@ export default function NavbarSection() {
                   items={menu.submenus.map((sub) => ({
                     label: sub.title,
                     href: sub.href as string,
-                    icon: getIcon(sub.icon, 20), // pakai icon default
+                    icon: getIcon(sub.icon, 20),
+                    active: isActive(sub.href), // 👈 aktifkan di sini
                   }))}
                   cols={2}
                   width="w-[340px]"
@@ -145,7 +153,9 @@ export default function NavbarSection() {
                   <Link
                     href={menu.href as string}
                     className={`${
-                      isPastBanner ? "text-black" : "text-black"
+                      isActive(menu.href)
+                        ? "text-primary border-b-2 border-primary"
+                        : "text-black"
                     } hover:text-primary text-xl font-semibold transition duration-200`}
                   >
                     {menu.title}
@@ -187,7 +197,11 @@ export default function NavbarSection() {
                   <>
                     {/* Parent Menu */}
                     <div
-                      className="flex items-center justify-center gap-2 transition-all duration-200 hover:text-primary hover:translate-x-[2px] cursor-pointer"
+                      className={`flex items-center justify-center gap-2 transition-all duration-200 hover:text-primary hover:translate-x-[2px] cursor-pointer ${
+                        menu.submenus.some((s) => isActive(s.href))
+                          ? "text-primary font-bold"
+                          : ""
+                      }`}
                       onClick={() => toggleSubmenu(index)}
                     >
                       <p>{menu.title}</p>
@@ -209,12 +223,12 @@ export default function NavbarSection() {
                           key={sub.id}
                           onClick={() => handleSubClick(subIndex)}
                           className={`text-md py-[15px] flex items-center justify-center gap-2 px-5 cursor-pointer transition-all duration-200 ${
-                            activeSubIndex === subIndex
-                              ? "bg-secondary text-white"
+                            isActive(sub.href)
+                              ? "bg-primary text-white"
                               : "hover:bg-primary/20"
                           }`}
                         >
-                          {getIcon(sub.icon, 18)} {/* icon default */}
+                          {getIcon(sub.icon, 18)}
                           <Link
                             href={sub.href as string}
                             className="block text-center"
@@ -228,7 +242,9 @@ export default function NavbarSection() {
                 ) : (
                   <Link
                     href={menu.href as string}
-                    className="flex items-center justify-center gap-2 transition-all duration-200 hover:text-primary hover:translate-x-[2px]"
+                    className={`flex items-center justify-center gap-2 transition-all duration-200 hover:text-primary hover:translate-x-[2px] ${
+                      isActive(menu.href) ? "text-primary font-bold" : ""
+                    }`}
                     onClick={() => setIsOpen(false)}
                   >
                     {menu.title}

@@ -157,7 +157,7 @@ export default function ProductDashboard({ product }: { product: Product }) {
 
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Data Judul {product.name}</h1>
+        <h1 className="text-3xl font-bold">Judul {product.name}</h1>
 
         <button
           onClick={() => setAddModal(true)}

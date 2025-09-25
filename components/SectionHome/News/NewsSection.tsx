@@ -190,10 +190,17 @@ export default function NewsSection({ limit }: { limit?: number }) {
                   })}
                 </span>
                 <h3 className="text-lg font-bold mt-2 mb-3">{item.title}</h3>
+
                 <div
                   className="text-gray-600 flex-grow"
-                  dangerouslySetInnerHTML={{ __html: item.content }}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      item.content.length > 80
+                        ? item.content.substring(0, 80) + "..."
+                        : item.content,
+                  }}
                 />
+
                 <button
                   onClick={() => router.push(`/page/news/${item.id}`)}
                   className="mt-4 inline-flex items-center text-primary font-semibold hover:underline"

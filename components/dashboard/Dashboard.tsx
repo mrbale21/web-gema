@@ -32,7 +32,7 @@ export default function Dashboard() {
         fetch("/api/users"),
         fetch("/api/news"),
         fetch("/api/tenant"),
-        fetch("/api/product"),
+        fetch("/api/products"),
       ]);
 
       setUsers(usersRes.ok ? await usersRes.json() : []);
@@ -114,7 +114,11 @@ export default function Dashboard() {
                   <p className="text-sm font-medium text-gray-600">
                     {stat.label}
                   </p>
-                  <p className="text-xl font-bold text-gray-900 mt-1">
+                  <p
+                    className={`font-bold text-gray-900 mt-1 ${
+                      i === 3 ? "text-xl" : "pt-2 text-3xl"
+                    }`}
+                  >
                     {stat.value}
                   </p>
                 </div>

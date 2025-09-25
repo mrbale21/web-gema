@@ -102,6 +102,12 @@ model Banner {
   image     String?
 }
 
+model BannerPage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  image     String?
+}
+
 model Tenant {
   id           Int     @id @default(autoincrement())
   nameTenant   String
